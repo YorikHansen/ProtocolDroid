@@ -21,6 +21,9 @@
 			],
 			"js": [
 				"content_scripts/content.js"
+			],
+			"css": [
+				"content_scripts/feature-visible-comments.css"
 			]
 		}
 	],

@@ -1,0 +1,54 @@
+.comment {
+	user-select: none;
+	filter: opacity(0.5);
+	display: inline;
+}
+
+.comment::before,
+.comment::after {
+	white-space: nowrap;
+}
+
+.comment-block {
+	display: block;
+}
+
+.comment:hover,
+.comment[data-opened="true"] {
+	user-select: auto;
+}
+
+.comment:hover::before,
+.comment[data-opened="true"]::before {
+	content: '<!-- '
+}
+
+.comment:hover::after,
+.comment[data-opened="true"]::after {
+	content: ' -->'
+}
+
+.comment:hover .comment-icon,
+.comment[data-opened="true"] .comment-icon {
+	display: none;
+}
+
+.comment .comment-content,
+.comment .comment-author {
+	display: none;
+}
+
+.comment:hover .comment-content,
+.comment:hover .comment-author,
+.comment[data-opened="true"] .comment-content,
+.comment[data-opened="true"] .comment-author {
+	display: initial;
+}
+
+.comment .comment-author {
+	font-style: italic;
+}
+
+.comment .comment-author::before {
+	content: "~";
+}
