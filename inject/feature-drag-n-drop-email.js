@@ -5,7 +5,7 @@ const rfc2047Decode = (encoded) => {
 		if (char === '=') {
 			// =?charset?encoding?text?= -> charset, encoding, text
 			let [charset, encoding, text] = encoded.slice(i + 2).split('?', 3);
-			let j = charset.length + encoding.length + text.length + 6; // =? + ? + ? + ?=
+			let j = charset.length + encoding.length + text.length + 5; // =? + ? + ? + ?=
 
 			let textDecoder = new TextDecoder(charset);
 			let bytes;
@@ -16,7 +16,6 @@ const rfc2047Decode = (encoded) => {
 					for (let i = 0; i < binary.length; i++) {
 						bytes[i] = binary.charCodeAt(i);
 					}
-					decoded += textDecoder.decode(bytes);
 					break;
 				case 'Q':
 					bytes = new Uint8Array(text.length - 2 * (text.split('=').length - 1));
@@ -37,9 +36,9 @@ const rfc2047Decode = (encoded) => {
 								break;
 						}
 					}
-					decoded += textDecoder.decode(bytes);
 					break;
 			}
+			decoded += textDecoder.decode(bytes);
 			i += j;
 		} else {
 			decoded += char;
