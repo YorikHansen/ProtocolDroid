@@ -1,0 +1,34 @@
+{
+	"manifest_version": 2,
+	"name": "Protocol Droid",
+	"description": "A client side HedgeDoc extension that helps with protocols.",
+	"author": "Yorik Hansen",
+	"version": "0.0.1",
+	"browser_specific_settings": {
+		"gecko": {
+			"id": "protocol-droid@yorik.dev"
+		}
+	},
+	"background": {
+		"scripts": [
+			"background/injector.js"
+		]
+	},
+	"content_scripts": [
+		{
+			"matches": [
+				"https://*.fs-infmath.uni-kiel.de/codimd/*"
+			],
+			"js": [
+				"content_scripts/content.js"
+			]
+		}
+	],
+	"permissions": [
+		"storage",
+		"activeTab",
+		"tabs",
+		"scripting",
+		"https://*.fs-infmath.uni-kiel.de/codimd/*"
+	]
+}
