@@ -13,10 +13,14 @@ getMardownIt().then((md) => {
 		let content = tokens[idx].content;
 
 		if (content.search(is_comment) < 0) {
-			// TODO: Get data-startline and data-endline correct
 			// if (content.startsWith('<!--')) {
-			// 	return md.render(`&ZeroWidthSpace;${content}`);
+			// 	tokens[idx].content = `<p>${content}</p>`;
 			// }
+			// TODO: Get this right, then uncomment the previous lines
+			// tokens[idx].attrJoin('class', 'part');
+			// tokens[idx].attrJoin('data-startline', tokens[idx].map[0] + 1);
+			// tokens[idx].attrJoin('data-endline', tokens[idx].map[1]);
+
 			return defaultHTMLBlockRenderer(tokens, idx, options, env, self);
 		}
 		
@@ -31,7 +35,8 @@ getMardownIt().then((md) => {
 		}
 		transformed += content;
 
-		return md.render(transformed);
+		tokens[idx].content = `<p class="part" data-startline="${tokens[idx].map[0] + 1}" data-endline="${tokens[idx].map[1]}">${transformed}</p>`;
+		return defaultHTMLBlockRenderer(tokens, idx, options, env, self);
 	};
 
 	html_inline = (tokens, idx, options, env, self) => {
