@@ -13,9 +13,10 @@ getMardownIt().then((md) => {
 		let content = tokens[idx].content;
 
 		if (content.search(is_comment) < 0) {
-			if (content.startsWith('<!--')) {
-				return md.render(`&ZeroWidthSpace;${content}`);
-			}
+			// TODO: Get data-startline and data-endline correct
+			// if (content.startsWith('<!--')) {
+			// 	return md.render(`&ZeroWidthSpace;${content}`);
+			// }
 			return defaultHTMLBlockRenderer(tokens, idx, options, env, self);
 		}
 		
