@@ -13,6 +13,9 @@ getMardownIt().then((md) => {
 		let content = tokens[idx].content;
 
 		if (content.search(is_comment) < 0) {
+			if (content.startsWith('<!--')) {
+				return md.render(`<span>${content}</span>`);
+			}
 			return defaultHTMLBlockRenderer(tokens, idx, options, env, self);
 		}
 		
