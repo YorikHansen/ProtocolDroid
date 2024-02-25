@@ -14,23 +14,23 @@ getMardownIt().then((md) => {
 
 		if (content.search(is_comment) < 0) {
 			if (content.startsWith('<!--')) {
-				return md.render(`<span>${content}</span>`);
+				return md.render(`&ZeroWidthSpace;${content}`);
 			}
 			return defaultHTMLBlockRenderer(tokens, idx, options, env, self);
 		}
 		
-		let o = '';
+		let transformed = '';
 		let i = content.search(is_comment);
 		while (i >= 0) {
 			let match = content.match(is_comment);
-			o += content.slice(0, i);
-			o += `<span class="comment"><span class="comment-icon fa fa-comment fa-fw"></span><span class="comment-content">${md.utils.escapeHtml(match[1].trim())}</span> <span class="comment-author">${md.utils.escapeHtml(match[2].trim())}</span></span>`;
+			transformed += content.slice(0, i);
+			transformed += `<span class="comment"><span class="comment-icon fa fa-comment fa-fw"></span><span class="comment-content">${md.utils.escapeHtml(match[1].trim())}</span> <span class="comment-author">${md.utils.escapeHtml(match[2].trim())}</span></span>`;
 			content = content.slice(i + match[0].length);
 			i = content.search(is_comment);
 		}
-		o += content;
+		transformed += content;
 
-		return md.render(o);
+		return md.render(transformed);
 	};
 
 	html_inline = (tokens, idx, options, env, self) => {
