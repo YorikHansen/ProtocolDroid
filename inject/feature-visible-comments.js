@@ -1,13 +1,20 @@
 // TODO: This is a feature that should be enabled/disabled by the user
 
 // TODO: Get comment-button and change it's behavior
+// TODO: After loading the page, a rerender should be triggered to show the comments
 
 getMardownIt().then((md) => {		
 	const proxy = (tokens, idx, options, env, self) => self.renderToken(tokens, idx, options);
 	const defaultHTMLBlockRenderer = md.renderer.rules.html_block || proxy;
 	const defaultHTMLInlineRenderer = md.renderer.rules.html_inline || proxy;
 
-	const is_comment = /<!--\s*((?:[^-\s]|-[^-]|--[^>])(?:[^-]|-[^-]|--[^>])*)\s*~\s*((?:[^-\s]|-[^-]|--[^>])(?:[^-]|-[^-]|--[^>])*)\s*-->/;
+	// Comments have the form `<!-- comment ~author -->`. 
+	//  There MUST be at least one white space (`\s`) before the `~`. 
+	//  The author MAY NOT start with a `~`. 
+	//  The author and the comment MAY NOT contain `-->`.
+	//  The comment and the author MUST have at least one non-white space character.
+	// TODO: <!-- - ~...--> is valid, but not recognized due to `- ` being used as a comment, so the required white space is not recognized
+	const is_comment = /<!--\s*((?:[^-\s]|-[^-]|--[^>])(?:[^-]|-[^-]|--[^>])*)\s+~\s*((?:[^~-\s]|-[^-]|--[^>])(?:[^-]|-[^-]|--[^>])*)\s*-->/;
 
 	html_block = (tokens, idx, options, env, self) => {
 		let content = tokens[idx].content;
