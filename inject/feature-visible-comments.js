@@ -16,6 +16,8 @@ getMardownIt().then((md) => {
 	// TODO: <!-- - ~...--> is valid, but not recognized due to `- ` being used as a comment, so the required white space is not recognized
 	const is_comment = /<!--\s*((?:[^-\s]|-[^-]|--[^>])(?:[^-]|-[^-]|--[^>])*)\s+~\s*((?:[^~-\s\n]|-[^-\n]|--[^>\n])(?:[^-\n]|-[^-\n]|--[^>\n])*)\s*-->/;
 
+
+	// TODO: Fix error with indented html_blocks
 	html_block = (tokens, idx, options, env, self) => {
 		let content = tokens[idx].content;
 
@@ -36,7 +38,7 @@ getMardownIt().then((md) => {
 		while (i >= 0) {
 			let match = content.match(is_comment);
 			transformed += content.slice(0, i);
-			transformed += `<span class="comment"><span class="comment-icon fa fa-comment fa-fw"></span><span class="comment-content">${md.utils.escapeHtml(match[1].trim())}</span> <span class="comment-author">${md.utils.escapeHtml(match[2].trim())}</span></span>`;
+			transformed += `<span class="comment"><span class="comment-icon fa fa-comment fa-fw"></span><span class="comment-content">${md.utils.escapeHtml(match[1].trim())}</span><span class="comment-author">${md.utils.escapeHtml(match[2].trim())}</span></span>`;
 			content = content.slice(i + match[0].length);
 			i = content.search(is_comment);
 		}
@@ -49,7 +51,7 @@ getMardownIt().then((md) => {
 	html_inline = (tokens, idx, options, env, self) => {
 		const match = tokens[idx].content.match(is_comment);
 		if (match) {
-			return `<span class="comment"><span class="comment-icon fa fa-comment fa-fw"></span><span class="comment-content">${md.utils.escapeHtml(match[1].trim())}</span> <span class="comment-author">${md.utils.escapeHtml(match[2].trim())}</span></span>`;
+			return `<span class="comment"><span class="comment-icon fa fa-comment fa-fw"></span><span class="comment-content">${md.utils.escapeHtml(match[1].trim())}</span><span class="comment-author">${md.utils.escapeHtml(match[2].trim())}</span></span>`;
 		}
 		return defaultHTMLInlineRenderer(tokens, idx, options, env, self)
 	};
@@ -72,6 +74,13 @@ const featureVisibleComments = {
 	'__buttonHandler': __buttonHandler
 };
 
+window.wrappedJSObject.protocolDroid.featureVisibleComments = cloneInto(featureVisibleComments, window, {cloneFunctions: true});
+
+getByQuery('#makeComment').then((elem) => {
+	window.wrappedJSObject.$('#makeComment').off('click');  // Remove the default behavior
+	elem.addEventListener('click', window.wrappedJSObject.protocolDroid.featureVisibleComments.__buttonHandler);
+});
+
 document.addEventListener('click', (event) => {
 	let target = event.target;
 	while (target) {
@@ -80,13 +89,6 @@ document.addEventListener('click', (event) => {
 		}
 		target = target.parentElement;
 	}
-});
-
-window.wrappedJSObject.protocolDroid.featureVisibleComments = cloneInto(featureVisibleComments, window, {cloneFunctions: true});
-
-getByQuery('#makeComment').then((elem) => {
-	window.wrappedJSObject.$('#makeComment').off('click');  // Remove the default behavior
-	elem.addEventListener('click', window.wrappedJSObject.protocolDroid.featureVisibleComments.__buttonHandler);
 });
 
 console.log('inject/feature-visible-comments.js');

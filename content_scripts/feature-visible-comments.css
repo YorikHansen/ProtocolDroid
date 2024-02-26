@@ -28,21 +28,18 @@
 	content: ' -->'
 }
 
+.comment *:not(.comment-icon) {
+	display: none;
+}
+
+.comment:hover *:not(.comment-icon),
+.comment[data-opened="true"] *:not(.comment-icon) {
+	display: initial;
+}
+
 .comment:hover .comment-icon,
 .comment[data-opened="true"] .comment-icon {
 	display: none;
-}
-
-.comment .comment-content,
-.comment .comment-author {
-	display: none;
-}
-
-.comment:hover .comment-content,
-.comment:hover .comment-author,
-.comment[data-opened="true"] .comment-content,
-.comment[data-opened="true"] .comment-author {
-	display: initial;
 }
 
 .comment .comment-author {
@@ -51,4 +48,8 @@
 
 .comment .comment-author::before {
 	content: "~";
+}
+
+.comment .comment-content::after {
+	content: " ";
 }
