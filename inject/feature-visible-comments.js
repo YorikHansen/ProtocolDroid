@@ -1,7 +1,7 @@
 // TODO: This is a feature that should be enabled/disabled by the user
 
-// TODO: Get comment-button and change it's behavior
 // TODO: After loading the page, a rerender should be triggered to show the comments
+// TODO: Assign colors to the commentators
 
 getMardownIt().then((md) => {		
 	const proxy = (tokens, idx, options, env, self) => self.renderToken(tokens, idx, options);
@@ -14,7 +14,7 @@ getMardownIt().then((md) => {
 	//  The author and the comment MAY NOT contain `-->`.
 	//  The comment and the author MUST have at least one non-white space character.
 	// TODO: <!-- - ~...--> is valid, but not recognized due to `- ` being used as a comment, so the required white space is not recognized
-	const is_comment = /<!--\s*((?:[^-\s]|-[^-]|--[^>])(?:[^-]|-[^-]|--[^>])*)\s+~\s*((?:[^~-\s]|-[^-]|--[^>])(?:[^-]|-[^-]|--[^>])*)\s*-->/;
+	const is_comment = /<!--\s*((?:[^-\s]|-[^-]|--[^>])(?:[^-]|-[^-]|--[^>])*)\s+~\s*((?:[^~-\s\n]|-[^-\n]|--[^>\n])(?:[^-\n]|-[^-\n]|--[^>\n])*)\s*-->/;
 
 	html_block = (tokens, idx, options, env, self) => {
 		let content = tokens[idx].content;
@@ -58,6 +58,20 @@ getMardownIt().then((md) => {
 	md.renderer.rules.html_inline = cloneInto(html_inline, md.renderer.rules, {cloneFunctions: true});
 });
 
+const __buttonHandler = () => {
+	const name = document.querySelector('.ui-user-item').querySelector('.ui-user-name').innerText.split(' ', 1)[0];
+	const cm = window.wrappedJSObject.editor;
+	const cursor = cm.getCursor();
+
+	cm.replaceRange(`<!--  ~${name} -->`, cursor, cursor);
+	cm.setCursor(cursor.line, cursor.ch + 5);
+	cm.focus();
+};
+
+const featureVisibleComments = {
+	'__buttonHandler': __buttonHandler
+};
+
 document.addEventListener('click', (event) => {
 	let target = event.target;
 	while (target) {
@@ -66,6 +80,13 @@ document.addEventListener('click', (event) => {
 		}
 		target = target.parentElement;
 	}
+});
+
+window.wrappedJSObject.protocolDroid.featureVisibleComments = cloneInto(featureVisibleComments, window, {cloneFunctions: true});
+
+getByQuery('#makeComment').then((elem) => {
+	window.wrappedJSObject.$('#makeComment').off('click');  // Remove the default behavior
+	elem.addEventListener('click', window.wrappedJSObject.protocolDroid.featureVisibleComments.__buttonHandler);
 });
 
 console.log('inject/feature-visible-comments.js');
