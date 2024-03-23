@@ -78,7 +78,7 @@ class Feature {
     static FEATURES = [];
 
     constructor(name, code, options = [], enabledByDefault = true) {
-        if (!name.match(/^[a-z][a-z0-9]*\-[a-z0-9]+(?:\-[a-z0-9]+)*$/i)) {
+        if (!name.match(/^[a-z][a-z0-9]*(?:\-[a-z0-9]+)+$/i)) {
             throw new Error('Feature names must only contain letters, numbers and hyphens. They must start with a letter, have at least one hyphen and may not end with a hyphen.');
         }
         this.name = name;
