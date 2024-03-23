@@ -129,7 +129,7 @@ class Feature {
 // <functions>
 
 const getByQuery = (query) => {
-    return new Promise((resolve, _) => {
+    return new Promise((resolve, _reject) => {
         const interval = setInterval(() => {
             const el = document.querySelector(query);
             if (el) {
@@ -141,7 +141,7 @@ const getByQuery = (query) => {
 };
 
 const getCodeMirror = () => {
-    return new Promise((resolve, _) => {
+    return new Promise((resolve, _reject) => {
         const interval = setInterval(() => {
             if (unsafeWindow.editor) {
                 clearInterval(interval);
@@ -152,7 +152,7 @@ const getCodeMirror = () => {
 };
 
 const getMardownIt = () => {
-    return new Promise((resolve, _) => {
+    return new Promise((resolve, _reject) => {
         const interval = setInterval(() => {
             if (unsafeWindow.md) {
                 clearInterval(interval);
@@ -166,7 +166,7 @@ const getMardownIt = () => {
 // <features>
 //   <visible-comments>
 Feature.add(
-    new Feature('visible-comments', (_, md, _) => {
+    new Feature('visible-comments', (_cm, md, _ns) => {
         GM_addStyle(`
             .comment {
                 user-select: none;
@@ -304,7 +304,7 @@ Feature.add(
 //   </visible-comments>
 //   <markdownit-tweaks>
 Feature.add(
-    new Feature('markdownit-tweaks', (_, md, ns) => {
+    new Feature('markdownit-tweaks', (_cm, md, ns) => {
         // Add custom markdown to the renderer
         if (Setting.get([ns, 'german-quotes'])) {
             md.options.quotes = '„“‚‘';  // German quotes
