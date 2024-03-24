@@ -20,17 +20,15 @@
 // ==/UserScript==
 
 class Setting {
-	static #SETTINGS = {};
+	static _SETTINGS = {};
 
-	#name;
-	#defaultValue;
-	#value;
+	_name;
+	_defaultValue;
+	_value;
+	_liveValue;
 
-	#title = ''; // TODO: Move to translate (soon™)
-	#description = '';
-
-	#input = document.createElement('input');
-	#disabledFn = () => false;
+	_input = document.createElement('input');
+	_disabledFn = () => false;
 
 	constructor(name, defaultValue) {
 		if (this.constructor === Setting) {
@@ -39,57 +37,98 @@ class Setting {
 			);
 		}
 
-		this.name = Setting.#handleName(name);
-		this.defaultValue = defaultValue;
+		this._name = Setting.#handleName(name);
+		this._defaultValue = defaultValue;
 
-		this.value = defaultValue;
+		this._value = this._defaultValue;
+		this._liveValue = this._value;
 	}
 
 	setDisabledFn(disabledFn) {
-		this.disabledFn = disabledFn;
+		this._disabledFn = disabledFn;
 		return this;
 	}
 
-	toNamespace(ns = 'protocoldroid') {
+	toNamespace(ns) {
 		ns = Setting.#handleName(ns);
-		this.name = Setting.#handleName([ns, this.name]);
+		this._name = Setting.#handleName([ns, this._name]);
 		return this;
 	}
+
+	_prepareInputElement() {
+		this._input.id = this._name;
+		this._input.disabled = this._disabledFn(Setting._SETTINGS);
+		this._input.value = this._liveValue;
+		
+		this._input.addEventListener('change', () => {
+			this._liveValue = this._input.value;
+		});
+	} 
 
 	getDOMElement() {
 		let label = document.createElement('label');
-		label.for = this.name;
-		label.innerText = this.#title
+		label.htmlFor = this._name;
+		label.innerText = this._name;
 
-		this.#input.id = this.name;
-		this.#input.type = 'checkbox';
-		this.#input.checked = this.value;
-		this.#input.disabled = this.#disabledFn(Setting.#SETTINGS);
+		this._prepareInputElement();
+		this._input.addEventListener('change', () => {
+			for (let setting in Setting._SETTINGS) {
+				Setting._SETTINGS[setting]._input.disabled = Setting._SETTINGS[setting]._disabledFn(Setting._SETTINGS);
+			}
+		});
 
 		let div = document.createElement('div');
 		div.appendChild(label);
-		div.appendChild(input);
+		div.appendChild(this._input);
 		return div;
 	}
 
 	static add(setting) {
-		Setting.#SETTINGS[setting.name] = setting;
+		Setting._SETTINGS[setting._name] = setting;
 	}
+
 	static get(name) {
 		// TODO: Check if the setting exists
 		name = Setting.#handleName(name);
-		return Setting.#SETTINGS[name];
+		return {
+			value: Setting._SETTINGS[name]._value,
+			defaultValue: Setting._SETTINGS[name]._defaultValue,
+			liveValue: Setting._SETTINGS[name]._liveValue
+		};
 	}
+
 	static set(name, value) {
 		// TODO: Check if the setting exists and if the value is of the correct type
 		name = Setting.#handleName(name);
-		Setting.#SETTINGS[name].value = value;
+		Setting._SETTINGS[name]._liveValue = value;
 	}
 
-	static bundleHTML() { // TODO
-		let html = '';
-		for (let setting in Setting.#SETTINGS) {
-			html += `<div class="form-group"><label for="${setting}">${setting}</label>${Setting.#SETTINGS[setting].getDOMElement().outerHTML}</div>`;
+	static reset(name) {
+		name = Setting.#handleName(name);
+		Setting.set(name, Setting.get(name).defaultValue);
+	}
+
+	static commit(name) {
+		name = Setting.#handleName(name);
+		Setting._SETTINGS[name]._value = Setting._SETTINGS[name]._liveValue;
+	}
+
+	static resetAll() {
+		for (let setting in Setting._SETTINGS) {
+			Setting.reset(setting);
+		}
+	}
+
+	static commitAll() {
+		for (let setting in Setting._SETTINGS) {
+			Setting.commit(setting);
+		}
+	}
+
+	static bundleHTML() { // TODO: Ordering
+		let html = document.createElement('div');
+		for (let setting in Setting._SETTINGS) {
+			html.appendChild(Setting._SETTINGS[setting].getDOMElement());
 		}
 		return html;
 	}
@@ -97,9 +136,6 @@ class Setting {
 	static #handleName(name) {
 		if (Array.isArray(name)) {
 			name = name.join('.');
-		}
-		if (!name.startsWith('protocoldroid.')) {
-			name = 'protocoldroid.' + name;
 		}
 		return name;
 	}
@@ -109,6 +145,17 @@ class BooleanSetting extends Setting {
 	constructor(name, defaultValue) {
 		super(name, defaultValue);
 	}
+
+	_prepareInputElement() {
+		this._input.id = this._name;
+		this._input.disabled = this._disabledFn(Setting._SETTINGS);
+		this._input.type = 'checkbox';
+		this._input.checked = this._liveValue;
+		
+		this._input.addEventListener('change', () => {
+			this._liveValue = this._input.checked;
+		});
+	} 
 }
 
 
@@ -134,16 +181,16 @@ class Feature {
 		);
 		this.options.forEach(option => Setting.add(
 			option.toNamespace(this.name).setDisabledFn(
-				() => !Setting.get(['features', this.name]).value
+				() => !Setting.get(['features', this.name]).liveValue
 			)
 		));
 
 		return Feature.add(this);
 	}
 
-	load(cm, md, ns) {
+	load(cm, md, _ns) {
 		if (Setting.get(['features', this.name]).value) {
-			this.code(cm, md, [ns, this.name]);
+			this.code(cm, md, [this.name]);
 			console.log(`Feature ${this.name} loaded`);
 		}
 	}
@@ -158,7 +205,7 @@ class Feature {
 	}
 
 	static loadAll(cm, md) {
-		Feature.FEATURES.forEach(feature => feature.load(cm, md, 'protocoldroid'));
+		Feature.FEATURES.forEach(feature => feature.load(cm, md, ''));
 	}
 }
 
@@ -233,7 +280,6 @@ const addModal = (id, title, content, buttons) => {
 	}
 	modalContent.appendChild(modalHeader);
 	if (content instanceof HTMLElement) {
-		console.log('HTMLElement');
 		content.classList.add('modal-body');
 		modalContent.appendChild(content);
 	} else {
@@ -259,8 +305,10 @@ const addSettingMenu = () => {
 	console.log('Adding settings menu');
 
 	// Settings modal
-	let modalContent = document.createElement('div');
-	modalContent.innerHTML = Setting.bundleHTML();
+	let modalContent = Setting.bundleHTML();
+	
+	modalContent = document.createElement('div');
+	modalContent.innerHTML = '<i>Coming soon</i>';
 
 	let closeButton = document.createElement('button');
 	closeButton.type = 'button';
