@@ -341,6 +341,7 @@ const addSettingMenu = () => {
 	// Settings modal
 	let modalContent = Setting.bundleHTML();
 
+	// TODO: Enable settings (when implemented)
 	modalContent = document.createElement('div');
 	modalContent.innerHTML = '<i>Coming soon</i>';
 
@@ -361,7 +362,7 @@ const addSettingMenu = () => {
 	saveButton.innerText = 'Speichern';
 
 
-	let modal = addModal('pd-settings-modal', 'Einstellungen', modalContent, [closeButton, resetButton, saveButton]);
+	let modal = addModal('pd-settings-modal', 'Einstellungen', modalContent, [closeButton/*, resetButton, saveButton*/]);
 	document.body.appendChild(modal); // TODO: The buttons don't work yet
 
 	// Settings button
@@ -398,7 +399,7 @@ new Feature('custom-logo-overlay', (_cm, _md, ns) => {
 }, [ // Options
 	new StringSetting('url-no-night', 'https://protocoldroid.yorik.dev/shades-no-night.svg'),
 	new StringSetting('url-night', 'https://protocoldroid.yorik.dev/shades-night.svg')
-]).setDescription('Add a custom logo overlay').register();
+], true).setDescription('Add a custom logo overlay').register(); // TODO: set to false
 
 
 new Feature('visible-comments', (_cm, md, _ns) => {
