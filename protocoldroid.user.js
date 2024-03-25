@@ -334,9 +334,14 @@ const addSettingMenu = () => {
 	let button = document.createElement('ul');
 	button.classList.add('nav', 'navbar-nav', 'navbar-form', 'navbar-right');
 	button.style = 'padding: 0;'
-	button.innerHTML = '<span class="btn btn-link btn-file ui-settings" title="Einstellungen" data-toggle="modal" data-target="#pd-settings-modal"><i class="fa fa-gears"></i></span>';
+	button.innerHTML = '<span class="btn btn-link ui-settings" title="Einstellungen" data-toggle="modal" data-target="#pd-settings-modal"><i class="fa fa-gears"></i></span>';
+
+	let mobileButton = document.createElement('div');
+	mobileButton.classList.add('nav-mobile', 'pull-right', 'visible-xs');
+	mobileButton.innerHTML = '<a class="btn btn-link ui-settings" title="Einstellungen" data-toggle="modal" data-target="#pd-settings-modal"><i class="fa fa-gears"></i></a>';
 
 	getByQuery('.nav.navbar-nav.navbar-right').then(elem => elem.after(button));
+	getByQuery('.nav-mobile.pull-right.visible-xs').then(elem => elem.before(mobileButton));
 };
 
 
