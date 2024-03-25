@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            Protocol Droid
 // @namespace       https://protocoldroid.yorik.dev/
-// @version         0.0.4
+// @version         0.0.5
 // @description     A client side HedgeDoc extension that helps with protocols.
 // @author          Yorik Hansen
 // @homepage        https://github.com/YorikHansen/ProtocolDroid
@@ -400,6 +400,68 @@ new Feature('custom-logo-overlay', (_cm, _md, ns) => {
 	new StringSetting('url-no-night', 'https://protocoldroid.yorik.dev/shades-no-night.svg'),
 	new StringSetting('url-night', 'https://protocoldroid.yorik.dev/shades-night.svg')
 ], true).setDescription('Add a custom logo overlay').register(); // TODO: set to false
+
+new Feature('todo-notes', (_cm, md, _ns) => {
+	GM_addStyle(`
+		.todo-note {
+			color: #eda35e;
+		}
+
+		.todo-text::before {
+			content: 'TODO: ';
+			font-weight: bold;
+		}
+
+		.todo-text.empty::before {
+			content: 'TODO';
+		}
+	`);
+
+	const proxy = (tokens, idx, options, env, self) => self.renderToken(tokens, idx, options);
+	const defaultHTMLBlockRenderer = md.renderer.rules.html_block || proxy;
+	const defaultHTMLInlineRenderer = md.renderer.rules.html_inline || proxy;
+
+	const is_todo = /<!--\s*(?:\[TODO\]|TODO):?\s*(\S.*\S | \S)?\s*-->/i;
+
+	md.renderer.rules.html_block = (tokens, idx, options, env, self) => {
+		let content = tokens[idx].content;
+
+		if (content.search(is_todo) < 0) {
+			return defaultHTMLBlockRenderer(tokens, idx, options, env, self);
+		}
+
+		let transformed = '';
+		let i = content.search(is_todo);
+		while (i >= 0) {
+			let match = content.match(is_todo);
+			transformed += content.slice(0, i);
+			if (match[1]) {
+				transformed += `<span class="todo-note"><span class="todo-icon fa fa-sticky-note fa-fw"></span><span class="todo-text">${md.utils.escapeHtml(match[1].trim())}</span></span>`;
+			} else {
+				transformed += `<span class="todo-note"><span class="todo-icon fa fa-sticky-note fa-fw"></span><span class="todo-text empty"></span></span>`;
+			}
+			content = content.slice(i + match[0].length);
+			i = content.search(is_todo);
+		}
+		transformed += content;
+
+		tokens[idx].content = `<p class="part" data-startline="${tokens[idx].map[0] + 1}" data-endline="${tokens[idx].map[1]}">${transformed}</p>`;
+		return defaultHTMLBlockRenderer(tokens, idx, options, env, self);
+	};
+
+	md.renderer.rules.html_inline = (tokens, idx, options, env, self) => {
+		const match = tokens[idx].content.match(is_todo);
+		if (match) {
+			if (match[1]) {
+				return `<span class="todo-note"><span class="todo-icon fa fa-sticky-note fa-fw"></span><span class="todo-text">${md.utils.escapeHtml(match[1].trim())}</span></span>`;
+			}
+			return `<span class="todo-note"><span class="todo-icon fa fa-sticky-note fa-fw"></span><span class="todo-text empty"></span></span>`;
+		}
+		return defaultHTMLInlineRenderer(tokens, idx, options, env, self)
+	}
+
+	// TODO: What about <!-- TODO: somethin ~my-name -->? Is this a comment, a TODO or a TODO-comment?
+}).setDescription('Highlight TODO notes in the editor').register();
 
 
 new Feature('visible-comments', (_cm, md, _ns) => {
