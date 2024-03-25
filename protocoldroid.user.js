@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            Protocol Droid
 // @namespace       https://protocoldroid.yorik.dev/
-// @version         0.0.3
+// @version         0.0.4
 // @description     A client side HedgeDoc extension that helps with protocols.
 // @author          Yorik Hansen
 // @homepage        https://github.com/YorikHansen/ProtocolDroid
@@ -154,6 +154,23 @@ class BooleanSetting extends Setting {
 
 		this._input.addEventListener('change', () => {
 			this._liveValue = this._input.checked;
+		});
+	}
+}
+
+class StringSetting extends Setting {
+	constructor(name, defaultValue) {
+		super(name, defaultValue);
+	}
+
+	_prepareInputElement() {
+		this._input.id = this._name;
+		this._input.disabled = this._disabledFn(Setting._SETTINGS);
+		this._input.type = 'text';
+		this._input.value = this._liveValue;
+
+		this._input.addEventListener('change', () => {
+			this._liveValue = this._input.value;
 		});
 	}
 }
@@ -360,6 +377,28 @@ const addSettingMenu = () => {
 	getByQuery('.nav.navbar-nav.navbar-right').then(elem => elem.after(button));
 	getByQuery('.nav-mobile.pull-right.visible-xs').then(elem => elem.before(mobileButton));
 };
+
+
+new Feature('custom-logo-overlay', (_cm, _md, ns) => {
+	GM_addStyle(`
+		.custom-logo-overlay {
+			transform: translateY(-100%);
+		}
+	`);
+
+	let logoNoNight = document.createElement('img');
+	logoNoNight.classList.add('h-100', 'custom-logo-overlay', 'no-night');
+	logoNoNight.src = Setting.get([ns, 'url-no-night']).value;
+	document.querySelector('.header-brand').append(logoNoNight);
+
+	let logoNight = document.createElement('img');
+	logoNight.classList.add('h-100', 'custom-logo-overlay', 'night')
+	logoNight.src = Setting.get([ns, 'url-night']).value;
+	document.querySelector('.header-brand').append(logoNight);
+}, [ // Options
+	new StringSetting('url-no-night', 'https://protocoldroid.yorik.dev/shades-no-night.svg'),
+	new StringSetting('url-night', 'https://protocoldroid.yorik.dev/shades-night.svg')
+]).setDescription('Add a custom logo overlay').register();
 
 
 new Feature('visible-comments', (_cm, md, _ns) => {
