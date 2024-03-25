@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            Protocol Droid
 // @namespace       https://protocoldroid.yorik.dev/
-// @version         0.0.2
+// @version         0.0.3
 // @description     A client side HedgeDoc extension that helps with protocols.
 // @author          Yorik Hansen
 // @homepage        https://github.com/YorikHansen/ProtocolDroid
@@ -59,11 +59,11 @@ class Setting {
 		this._input.id = this._name;
 		this._input.disabled = this._disabledFn(Setting._SETTINGS);
 		this._input.value = this._liveValue;
-		
+
 		this._input.addEventListener('change', () => {
 			this._liveValue = this._input.value;
 		});
-	} 
+	}
 
 	getDOMElement() {
 		let label = document.createElement('label');
@@ -151,11 +151,11 @@ class BooleanSetting extends Setting {
 		this._input.disabled = this._disabledFn(Setting._SETTINGS);
 		this._input.type = 'checkbox';
 		this._input.checked = this._liveValue;
-		
+
 		this._input.addEventListener('change', () => {
 			this._liveValue = this._input.checked;
 		});
-	} 
+	}
 }
 
 
@@ -304,9 +304,26 @@ const addModal = (id, title, content, buttons) => {
 const addSettingMenu = () => {
 	console.log('Adding settings menu');
 
+	GM_addStyle(`
+		#short-online-user-list {
+			line-height: 1;
+		}
+		@media (max-width: 821px) {
+			.navbar-collapse.collapse {
+				display: none !important;
+			}
+			.visible-xs {
+				display: block !important;
+			}
+			.navbar-header {
+				float: none;
+			}
+		}
+	`);
+
 	// Settings modal
 	let modalContent = Setting.bundleHTML();
-	
+
 	modalContent = document.createElement('div');
 	modalContent.innerHTML = '<i>Coming soon</i>';
 
@@ -352,55 +369,72 @@ new Feature('visible-comments', (_cm, md, _ns) => {
 				filter: opacity(0.5);
 				display: inline;
 			}
-			
+
 			.comment::before,
 			.comment::after {
 				white-space: nowrap;
 			}
-			
+
 			.comment-block {
 				display: block;
 			}
-			
-			.comment:hover,
+
 			.comment[data-opened="true"] {
 				user-select: auto;
 			}
-			
-			.comment:hover::before,
+
 			.comment[data-opened="true"]::before {
-				content: '<!-- '
+				content: '<!-- ';
 			}
-			
-			.comment:hover::after,
+
 			.comment[data-opened="true"]::after {
-				content: ' -->'
+				content: ' -->';
 			}
-			
+
 			.comment *:not(.comment-icon) {
 				display: none;
 			}
-			
-			.comment:hover *:not(.comment-icon),
+
 			.comment[data-opened="true"] *:not(.comment-icon) {
 				display: initial;
 			}
-			
-			.comment:hover .comment-icon,
+
 			.comment[data-opened="true"] .comment-icon {
 				display: none;
 			}
-			
+
 			.comment .comment-author {
 				font-style: italic;
 			}
-			
+
 			.comment .comment-author::before {
 				content: "~";
 			}
-			
+
 			.comment .comment-content::after {
 				content: " ";
+			}
+
+			@media (hover: hover) {
+				.comment:hover {
+					user-select: auto;
+				}
+
+				.comment:hover::before {
+					content: '<!-- ';
+				}
+
+				.comment:hover::after {
+					content: ' -->';
+				}
+
+				.comment:hover *:not(.comment-icon) {
+					display: initial;
+				}
+
+				.comment:hover .comment-icon {
+					display: none;
+				}
 			}
 		`);
 
