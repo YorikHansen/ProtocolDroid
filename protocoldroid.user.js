@@ -859,7 +859,7 @@ new Feature('clean-publishing', (cm, _md, _ns) => {
 				return text.replace(/<!--.*?-->/gs, '');
 			},
 			(text) => { // cleanupAbbreveations
-				return text.replace(/\*\[.+?\]: .+?\n/gs, '');
+				return text.replace(/\*\[[^\n]+?\]: .+?\n/gs, '');
 			},
 			(text) => { // cleanupBlocks
 				return text.replace(/:::.*\n[\s\S]*?\n:::/gs, '');
