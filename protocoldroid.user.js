@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            Protocol Droid
 // @namespace       https://protocoldroid.yorik.dev/
-// @version         0.0.7
+// @version         0.0.8
 // @description     A client side HedgeDoc extension that helps with protocols.
 // @author          Yorik Hansen
 // @homepage        https://github.com/YorikHansen/ProtocolDroid
@@ -435,7 +435,7 @@ new Feature('todo-notes', (_cm, md, _ns) => {
 		}
 	`);
 
-	const proxy = (tokens, idx, options, env, self) => self.renderToken(tokens, idx, options);
+	const proxy = (tokens, idx, options, _env, self) => self.renderToken(tokens, idx, options);
 	const defaultHTMLBlockRenderer = md.renderer.rules.html_block || proxy;
 	const defaultHTMLInlineRenderer = md.renderer.rules.html_inline || proxy;
 
@@ -477,6 +477,26 @@ new Feature('todo-notes', (_cm, md, _ns) => {
 		}
 		return defaultHTMLInlineRenderer(tokens, idx, options, env, self)
 	}
+
+
+	let todoButton = document.createElement('a');
+	todoButton.classList.add('btn', 'btn-sm', 'text-uppercase');
+	todoButton.id = 'makeTodo';
+	todoButton.innerHTML = '<i class="fa fa-sticky-note fa-fw"></i>';
+	todoButton.title = 'Add TODO note';
+	todoButton.role = 'button';
+	todoButton.setAttribute('data-toggle', 'dropdown');
+	todoButton.setAttribute('aria-haspopup', 'true');
+	todoButton.setAttribute('aria-expanded', 'true');
+	todoButton.addEventListener('click', () => {
+		const cm = unsafeWindow.editor;
+		const cursor = cm.getCursor();
+
+		cm.replaceRange('<!-- TODO:  -->', cursor, cursor);
+		cm.setCursor(cursor.line, cursor.ch + 11);
+		cm.focus();
+	});
+	getByQuery('.toolbar .btn-group').then(el => el.appendChild(todoButton));
 
 	// TODO: What about <!-- TODO: somethin ~my-name -->? Is this a comment, a TODO or a TODO-comment?
 }).setDescription('Highlight TODO notes in the editor').register();
@@ -854,6 +874,7 @@ new Feature('clean-publishing', (cm, _md, _ns) => {
 
 
 	const cleanup = (text) => {
+		// TODO: Don't remove stuff in code-blocks
 		[ // TODO: Move this to options
 			(text) => { // cleanupComments
 				return text.replace(/<!--.*?-->/gs, '');
@@ -871,11 +892,15 @@ new Feature('clean-publishing', (cm, _md, _ns) => {
 				return text.replace(/^---\n[\s\S]*?\n---/gs, '');
 			},
 			(text) => { // cleanupHTML
-				return text.replace(/(?:<(?:[^>]+)>)/gi, ''); // TODO: Should this also remove the content?
+				// TODO: Should this also remove the content?
+				return text.replace(/(?:<(?:[^>]+)>)/gi, '');
 			},
 			(text) => { // cleanupWhitespaceBeginningAndEnd
 				return text.replace(/^\s+|\s+$/g, '');
 			},
+			(text) => { // removeMultipleNewlines
+				return text.replace(/\n\n+/g, '\n\n');
+			}
 		].forEach((cleanupFn) => {
 			text = cleanupFn(text);
 		});
@@ -971,8 +996,10 @@ new Feature('clean-publishing', (cm, _md, _ns) => {
 		document.body.appendChild(modal);
 	});
 }).setDescription(
-	'Modify the publish button to open a dialog with a cleaned version of the document'
+	'Modify the publish button to open a dialog with a cleaned version of the document ' + 
+	'because our protocol parser is not able to handle most of the HedgeDoc/ProtocolDroid features.'
 ).register();
+
 
 // TODO: Feature auto-top-numbers
 // TODO: codemirror-commands
