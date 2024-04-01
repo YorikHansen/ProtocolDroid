@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            Protocol Droid
 // @namespace       https://protocoldroid.yorik.dev/
-// @version         0.0.5
+// @version         0.0.6
 // @description     A client side HedgeDoc extension that helps with protocols.
 // @author          Yorik Hansen
 // @homepage        https://github.com/YorikHansen/ProtocolDroid
@@ -19,7 +19,11 @@
 // @connect         www.fs-infmath.uni-kiel.de
 // ==/UserScript==
 
-class Setting {
+// TODO: Check if not on login page
+// TODO: Document code
+// TODO: Move settings menu to feature (?) // But how would one reenable it?
+
+class Setting { // TODO: Load from storage
 	static _SETTINGS = {};
 
 	_name;
@@ -361,7 +365,6 @@ const addSettingMenu = () => {
 	saveButton.classList.add('btn', 'btn-primary');
 	saveButton.innerText = 'Speichern';
 
-
 	let modal = addModal('pd-settings-modal', 'Einstellungen', modalContent, [closeButton/*, resetButton, saveButton*/]);
 	document.body.appendChild(modal); // TODO: The buttons don't work yet
 
@@ -396,10 +399,10 @@ new Feature('custom-logo-overlay', (_cm, _md, ns) => {
 	logoNight.classList.add('h-100', 'custom-logo-overlay', 'night')
 	logoNight.src = Setting.get([ns, 'url-night']).value;
 	document.querySelector('.header-brand').append(logoNight);
-}, [ // Options
+}, [
 	new StringSetting('url-no-night', 'https://protocoldroid.yorik.dev/shades-no-night.svg'),
 	new StringSetting('url-night', 'https://protocoldroid.yorik.dev/shades-night.svg')
-], true).setDescription('Add a custom logo overlay').register(); // TODO: set to false
+], true).setDescription('Add a custom logo overlay').register(); // TODO: set default to false (because privacy)
 
 new Feature('todo-notes', (_cm, md, _ns) => {
 	GM_addStyle(`
@@ -414,6 +417,12 @@ new Feature('todo-notes', (_cm, md, _ns) => {
 
 		.todo-text.empty::before {
 			content: 'TODO';
+		}
+
+		@media print {
+			.todo-note {
+				display: none !important;
+			}
 		}
 	`);
 
@@ -463,8 +472,7 @@ new Feature('todo-notes', (_cm, md, _ns) => {
 	// TODO: What about <!-- TODO: somethin ~my-name -->? Is this a comment, a TODO or a TODO-comment?
 }).setDescription('Highlight TODO notes in the editor').register();
 
-
-new Feature('visible-comments', (_cm, md, _ns) => {
+new Feature('visible-comments', (_cm, md, ns) => {
 	GM_addStyle(`
 			.comment {
 				user-select: none;
@@ -538,9 +546,15 @@ new Feature('visible-comments', (_cm, md, _ns) => {
 					display: none;
 				}
 			}
+
+			@media print {
+				.comment {
+					display: none !important;
+				}
+			}
 		`);
 
-	const proxy = (tokens, idx, options, env, self) => self.renderToken(tokens, idx, options);
+	const proxy = (tokens, idx, options, _env, self) => self.renderToken(tokens, idx, options);
 	const defaultHTMLBlockRenderer = md.renderer.rules.html_block || proxy;
 	const defaultHTMLInlineRenderer = md.renderer.rules.html_inline || proxy;
 
@@ -592,20 +606,22 @@ new Feature('visible-comments', (_cm, md, _ns) => {
 		return defaultHTMLInlineRenderer(tokens, idx, options, env, self)
 	};
 
-	getByQuery('#makeComment').then((button) => {
-		$('#makeComment').off('click');
-		button.addEventListener('click', () => {
-			const name = document.querySelector('.ui-user-item').querySelector('.ui-user-name').innerText.split(' ', 1)[0];
-			const cm = unsafeWindow.editor;
-			const cursor = cm.getCursor();
+	if (Setting.get([ns, 'original-comment-button']).value) {
+		getByQuery('#makeComment').then((button) => {
+			$('#makeComment').off('click');
+			button.addEventListener('click', () => {
+				const name = document.querySelector('.ui-user-item').querySelector('.ui-user-name').innerText.split(' ', 1)[0];
+				const cm = unsafeWindow.editor;
+				const cursor = cm.getCursor();
 
-			// TODO: If cursor is in visible-comment, add comment after the current one, if it is in a normal comment, add author to the end
+				// TODO: If cursor is in visible-comment, add comment after the current one, if it is in a normal comment, add author to the end
 
-			cm.replaceRange(`<!--  ~${name} -->`, cursor, cursor);
-			cm.setCursor(cursor.line, cursor.ch + 5);
-			cm.focus();
+				cm.replaceRange(`<!--  ~${name} -->`, cursor, cursor);
+				cm.setCursor(cursor.line, cursor.ch + 5);
+				cm.focus();
+			});
 		});
-	});
+	}
 
 	document.addEventListener('click', (event) => {
 		let target = event.target;
@@ -616,18 +632,21 @@ new Feature('visible-comments', (_cm, md, _ns) => {
 			target = target.parentElement;
 		}
 	});
-}).setDescription('Make comments visible in the editor').register();
+}, [
+	new BooleanSetting('bundle-comments', false), // TODO: Implement this
+	new BooleanSetting('original-comment-button', false) // TODO: Implement this
+]).setDescription('Make comments visible in the editor').register();
 
 new Feature('markdownit-tweaks', (_cm, md, ns) => {
 	// Add custom markdown to the renderer
 	if (Setting.get([ns, 'german-quotes'])) {
 		md.options.quotes = '„“‚‘';  // German quotes
 	}
-}, [ // Options
+}, [
 	new BooleanSetting('german-quotes', true)
 ]).setDescription('Small tweaks for MarkdownIt').register();
 
-new Feature('drag-n-drop-email', (cm, _md) => {
+new Feature('drag-n-drop-email', (cm, _md, ns) => {
 	const rfc2047Decode = (encoded) => {
 		let decoded = '';
 		for (let i = 0; i < encoded.length; i++) {
@@ -678,10 +697,10 @@ new Feature('drag-n-drop-email', (cm, _md) => {
 	};
 
 	const handleEmail = (file) => {
-		return new Promise((resolve, reject) => {
+		return new Promise((resolve, _reject) => {
 			let reader = new FileReader();
 			reader.addEventListener('load', () => {
-				let [header_section, message_body] = reader.result.split(/\r\n\r\n/);
+				let [header_section, _message_body] = reader.result.split(/\r\n\r\n/);
 				header_section = header_section.replaceAll(/\r\n\s+/g, ' ');
 				let lines = header_section.split('\r\n');
 				let headers = {};
@@ -707,7 +726,7 @@ new Feature('drag-n-drop-email', (cm, _md) => {
 			if (file.type === 'message/rfc822') {
 				e.preventDefault();
 				handleEmail(file).then(line => {
-					// TODO: Insert at given mark, not at cursor
+					// TODO: Insert at given mark (<!-- [EMAILS] -->), not at cursor, if set in config
 					let coords = cloneInto({ 'left': e.x, 'top': e.y }, window, { cloneFunctions: false });
 					cm.replaceRange(line, cm.coordsChar(coords, 'window'));
 				});
@@ -716,11 +735,95 @@ new Feature('drag-n-drop-email', (cm, _md) => {
 	}
 
 	cm.on('drop', dropHandler);
-}).setDescription('Drag and drop emails into the editor').register();
+}, [
+	new StringSetting('email-template', '- `{{date}}`: {{subject}}\n'), // TODO: Implement this
+	new BooleanSetting('fixed-position', false) // TODO: Implement this
+]).setDescription('Drag and drop emails into the editor').register();
+
+
+new Feature('print-style', (_cm, _md, ns) => {
+	GM_addStyle(`
+		@media print {
+			abbr[title] {
+				text-decoration: none;
+			}
+			abbr[title]::after {
+				font-size: 12px !important;
+			}
+			.markdown-body h1 {
+				font-size: 1.5em;
+			}
+			
+			.markdown-body h2 {
+				font-size: 1.25em;
+				margin-bottom: 0;
+				margin-top: 12px;
+			}
+			
+			:is(h1, h2, h3, h4) + :is(h1, h2, h3, h4) {
+				margin-top: 0 !important;
+				padding-top: 0 !important;
+			}
+			
+			:is(h1, h2, h3, h4):has(+ :is(h1, h2, h3, h4)) {
+				margin-bottom: 0 !important;
+			}
+			
+			:is(h1, h2, h3, h4) + :is(h1, h2, h3, h4)::before {
+				display: none !important;
+			}
+			
+			img {
+				max-width: 15em !important;
+			}
+			
+			abbr[title="Tagesordnungspunkt"]::after {
+				display: none;
+			}
+			
+			.markdown-body {
+				font-size: 10pt;
+				line-height: 1.125;
+			}
+			
+			.markdown-body blockquote {
+				font-size: 10.5pt;
+				margin-bottom: 4px;
+			}
+			  
+			.markdown-body li > p {
+				margin-top: inherit;
+				margin-bottom: inherit;
+			}
+			
+			h1, h2,
+			h2 + ul {
+				page-break-before: auto;
+				break-before: auto;
+				page-break-after: avoid;
+				break-before: avoid;
+			}
+		}
+	`);
+	if (Setting.get([ns, 'save-trees']).value) {
+		GM_addStyle(`
+			@media print {
+				.markdown-body ul ul,
+				.markdown-body ol ol {
+					margin-left: 1em;
+				}
+			}
+		`);
+	}
+
+	// TODO: Show abbr on first occurence, hide on second
+}, [
+	new BooleanSetting('save-trees', true)
+]).setDescription('Add a print style').register();
+
 
 // TODO: Feature clean-publishing
 // TODO: Feature auto-top-numbers
-// TODO: Feature todo-notes
 // TODO: codemirror-commands
 // TODO: user-mentions
 
