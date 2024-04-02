@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            Protocol Droid
 // @namespace       https://protocoldroid.yorik.dev/
-// @version         0.0.8
+// @version         0.0.9
 // @description     A client side HedgeDoc extension that helps with protocols.
 // @author          Yorik Hansen
 // @homepage        https://github.com/YorikHansen/ProtocolDroid
@@ -19,8 +19,10 @@
 // @connect         www.fs-infmath.uni-kiel.de
 // ==/UserScript==
 
+// TODO: Check for updates
 // TODO: Check if not on login page
 // TODO: Document code
+// TODO: Ctrl + # to comment out selected lines (replace <!-- and --> with <\!-- and --\>) and vice versa
 // TODO: Move settings menu to feature (?) // But how would one reenable it?
 
 class Setting { // TODO: Load from storage
@@ -391,6 +393,31 @@ const addSettingMenu = () => {
 	getByQuery('.nav-mobile.pull-right.visible-xs').then(elem => elem.before(mobileButton));
 };
 
+const cursorInHTMLComment = (cm, cursor) => {
+	const start = cursor.line;
+	let i = start + 1;
+	let inComment = undefined;
+	let line, commentStart, commentEnd;
+	while (i > 0 && inComment === undefined) {
+		i--;
+		line = cm.getLine(i);
+		if (i === start) {
+			line = line.slice(0, cursor.ch);
+		}
+		commentStart = line.lastIndexOf('<!--');
+		commentEnd = line.lastIndexOf('-->');
+		if (commentStart >= 0 && commentEnd >= 0) {
+			return commentStart > commentEnd;
+		}
+		if (commentStart >= 0) {
+			return true;
+		}
+		if (commentEnd >= 0) {
+			return false;
+		}
+	}
+};
+
 
 new Feature('custom-logo-overlay', (_cm, _md, ns) => {
 	GM_addStyle(`
@@ -438,20 +465,20 @@ new Feature('todo-notes', (_cm, md, _ns) => {
 	const proxy = (tokens, idx, options, _env, self) => self.renderToken(tokens, idx, options);
 	const defaultHTMLBlockRenderer = md.renderer.rules.html_block || proxy;
 	const defaultHTMLInlineRenderer = md.renderer.rules.html_inline || proxy;
-
-	const is_todo = /<!--\s*(?:\[TODO\]|TODO):?\s*(\S.*\S | \S)?\s*-->/i;
+	// (?:[^-\n]|-[^-\n]|--[^>\n])*
+	const isTodo = /<!--\s*(?:\[TODO\]|TODO):?\s*((?:[^-\s]|-[^-\n]|--[^>\n])(?:[^-\n]|-[^-\n]|--[^>\n])*(?:[^-\s]|-[^-\s]|--[^>\s]) | (?:[^-\s]|-[^-\n]|--[^>\n]))?\s*-->/i;
 
 	md.renderer.rules.html_block = (tokens, idx, options, env, self) => {
 		let content = tokens[idx].content;
 
-		if (content.search(is_todo) < 0) {
+		if (content.search(isTodo) < 0) {
 			return defaultHTMLBlockRenderer(tokens, idx, options, env, self);
 		}
 
 		let transformed = '';
-		let i = content.search(is_todo);
+		let i = content.search(isTodo);
 		while (i >= 0) {
-			let match = content.match(is_todo);
+			let match = content.match(isTodo);
 			transformed += content.slice(0, i);
 			if (match[1]) {
 				transformed += `<span class="todo-note"><span class="todo-icon fa fa-sticky-note fa-fw"></span><span class="todo-text">${md.utils.escapeHtml(match[1].trim())}</span></span>`;
@@ -459,7 +486,7 @@ new Feature('todo-notes', (_cm, md, _ns) => {
 				transformed += `<span class="todo-note"><span class="todo-icon fa fa-sticky-note fa-fw"></span><span class="todo-text empty"></span></span>`;
 			}
 			content = content.slice(i + match[0].length);
-			i = content.search(is_todo);
+			i = content.search(isTodo);
 		}
 		transformed += content;
 
@@ -468,7 +495,7 @@ new Feature('todo-notes', (_cm, md, _ns) => {
 	};
 
 	md.renderer.rules.html_inline = (tokens, idx, options, env, self) => {
-		const match = tokens[idx].content.match(is_todo);
+		const match = tokens[idx].content.match(isTodo);
 		if (match) {
 			if (match[1]) {
 				return `<span class="todo-note"><span class="todo-icon fa fa-sticky-note fa-fw"></span><span class="todo-text">${md.utils.escapeHtml(match[1].trim())}</span></span>`;
@@ -491,9 +518,14 @@ new Feature('todo-notes', (_cm, md, _ns) => {
 	todoButton.addEventListener('click', () => {
 		const cm = unsafeWindow.editor;
 		const cursor = cm.getCursor();
-
-		cm.replaceRange('<!-- TODO:  -->', cursor, cursor);
-		cm.setCursor(cursor.line, cursor.ch + 11);
+		// TODO: Handle selection replacement
+		if (cursorInHTMLComment(cm, cursor)) {
+			cm.replaceRange('--><!-- TODO:  --><!--', cursor, cursor);
+			cm.setCursor(cursor.line, cursor.ch + 14);
+		} else {
+			cm.replaceRange('<!-- TODO:  -->', cursor, cursor);
+			cm.setCursor(cursor.line, cursor.ch + 11);
+		}
 		cm.focus();
 	});
 	getByQuery('.toolbar .btn-group').then(el => el.appendChild(todoButton));
@@ -503,57 +535,67 @@ new Feature('todo-notes', (_cm, md, _ns) => {
 
 new Feature('visible-comments', (_cm, md, ns) => {
 	GM_addStyle(`
+		.comment {
+			user-select: none;
+			filter: opacity(0.5);
+			display: inline;
+		}
+
+		.comment::before,
+		.comment::after {
+			white-space: nowrap;
+		}
+
+		.comment-block {
+			display: block;
+		}
+
+		.comment[data-opened="true"] {
+			user-select: auto;
+		}
+
+		.comment[data-opened="true"]::before {
+			content: '<!-- ';
+		}
+
+		.comment[data-opened="true"]::after {
+			content: ' -->';
+		}
+
+		.comment *:not(.comment-icon) {
+			display: none;
+		}
+
+		.comment[data-opened="true"] *:not(.comment-icon) {
+			display: initial;
+		}
+
+		.comment[data-opened="true"] .comment-icon {
+			display: none;
+		}
+
+		.comment .comment-author {
+			font-style: italic;
+		}
+
+		.comment .comment-author::before {
+			content: "~";
+		}
+
+		.comment .comment-content::after {
+			content: " ";
+		}
+
+		@media print {
 			.comment {
-				user-select: none;
-				filter: opacity(0.5);
-				display: inline;
+				display: none !important;
 			}
+		}
+	`);
 
-			.comment::before,
-			.comment::after {
-				white-space: nowrap;
-			}
-
-			.comment-block {
-				display: block;
-			}
-
-			.comment[data-opened="true"] {
-				user-select: auto;
-			}
-
-			.comment[data-opened="true"]::before {
-				content: '<!-- ';
-			}
-
-			.comment[data-opened="true"]::after {
-				content: ' -->';
-			}
-
-			.comment *:not(.comment-icon) {
-				display: none;
-			}
-
-			.comment[data-opened="true"] *:not(.comment-icon) {
-				display: initial;
-			}
-
-			.comment[data-opened="true"] .comment-icon {
-				display: none;
-			}
-
-			.comment .comment-author {
-				font-style: italic;
-			}
-
-			.comment .comment-author::before {
-				content: "~";
-			}
-
-			.comment .comment-content::after {
-				content: " ";
-			}
-
+	if (Setting.get([ns, 'hover-opens-comments']).value) {
+		GM_addStyle(`
+		
 			@media (hover: hover) {
 				.comment:hover {
 					user-select: auto;
@@ -575,13 +617,8 @@ new Feature('visible-comments', (_cm, md, ns) => {
 					display: none;
 				}
 			}
-
-			@media print {
-				.comment {
-					display: none !important;
-				}
-			}
-		`);
+		`)
+	}
 
 	const proxy = (tokens, idx, options, _env, self) => self.renderToken(tokens, idx, options);
 	const defaultHTMLBlockRenderer = md.renderer.rules.html_block || proxy;
@@ -593,14 +630,14 @@ new Feature('visible-comments', (_cm, md, ns) => {
 	//  The author and the comment MAY NOT contain `-->`.
 	//  The comment and the author MUST have at least one non-white space character.
 	// TODO: <!-- - ~...--> is valid, but not recognized due to `- ` being used as a comment, so the required white space is not recognized
-	const is_comment = /<!--\s*((?:[^-\s]|-[^-]|--[^>])(?:[^-]|-[^-]|--[^>])*)\s+~\s*((?:[^~-\s\n]|-[^-\n]|--[^>\n])(?:[^-\n]|-[^-\n]|--[^>\n])*)\s*-->/;
+	const isComment = /<!--\s*((?:[^-\s]|-[^-]|--[^>])(?:[^-]|-[^-]|--[^>])*)\s+~\s*((?:[^~-\s\n]|-[^-\n]|--[^>\n])(?:[^-\n]|-[^-\n]|--[^>\n])*)\s*-->/;
 
 
 	// TODO: Fix error with indented html_blocks
 	md.renderer.rules.html_block = (tokens, idx, options, env, self) => {
 		let content = tokens[idx].content;
 
-		if (content.search(is_comment) < 0) {
+		if (content.search(isComment) < 0) {
 			// if (content.startsWith('<!--')) {
 			// 	tokens[idx].content = `<p>${content}</p>`;
 			// }
@@ -613,13 +650,13 @@ new Feature('visible-comments', (_cm, md, ns) => {
 		}
 
 		let transformed = '';
-		let i = content.search(is_comment);
+		let i = content.search(isComment);
 		while (i >= 0) {
-			let match = content.match(is_comment);
+			let match = content.match(isComment);
 			transformed += content.slice(0, i);
-			transformed += `<span class="comment"><span class="comment-icon fa fa-comment fa-fw"></span><span class="comment-content">${md.utils.escapeHtml(match[1].trim())}</span><span class="comment-author">${md.utils.escapeHtml(match[2].trim())}</span></span>`;
+			transformed += `<span class="comment" data-opened="${Setting.get([ns, 'comment-opened-default']).value}"><span class="comment-icon fa fa-comment fa-fw"></span><span class="comment-content">${md.utils.escapeHtml(match[1].trim())}</span><span class="comment-author">${md.utils.escapeHtml(match[2].trim())}</span></span>`;
 			content = content.slice(i + match[0].length);
-			i = content.search(is_comment);
+			i = content.search(isComment);
 		}
 		transformed += content;
 
@@ -628,14 +665,14 @@ new Feature('visible-comments', (_cm, md, ns) => {
 	};
 
 	md.renderer.rules.html_inline = (tokens, idx, options, env, self) => {
-		const match = tokens[idx].content.match(is_comment);
+		const match = tokens[idx].content.match(isComment);
 		if (match) {
-			return `<span class="comment"><span class="comment-icon fa fa-comment fa-fw"></span><span class="comment-content">${md.utils.escapeHtml(match[1].trim())}</span><span class="comment-author">${md.utils.escapeHtml(match[2].trim())}</span></span>`;
+			return `<span class="comment" data-opened="${Setting.get([ns, 'comment-opened-default']).value}"><span class="comment-icon fa fa-comment fa-fw"></span><span class="comment-content">${md.utils.escapeHtml(match[1].trim())}</span><span class="comment-author">${md.utils.escapeHtml(match[2].trim())}</span></span>`;
 		}
 		return defaultHTMLInlineRenderer(tokens, idx, options, env, self)
 	};
 
-	if (Setting.get([ns, 'original-comment-button']).value) {
+	if (!Setting.get([ns, 'original-comment-button']).value) {
 		getByQuery('#makeComment').then((button) => {
 			$('#makeComment').off('click');
 			button.addEventListener('click', () => {
@@ -645,8 +682,15 @@ new Feature('visible-comments', (_cm, md, ns) => {
 
 				// TODO: If cursor is in visible-comment, add comment after the current one, if it is in a normal comment, add author to the end
 
-				cm.replaceRange(`<!--  ~${name} -->`, cursor, cursor);
-				cm.setCursor(cursor.line, cursor.ch + 5);
+				// TODO: respect cursor position
+
+				if (cursorInHTMLComment(cm, cursor)) {
+					cm.replaceRange(`--><!--  ~${name} --><!--`, cursor, cursor);
+					cm.setCursor(cursor.line, cursor.ch + 8);
+				} else {
+					cm.replaceRange(`<!--  ~${name} -->`, cursor, cursor);
+					cm.setCursor(cursor.line, cursor.ch + 5);
+				}
 				cm.focus();
 			});
 		});
@@ -663,7 +707,10 @@ new Feature('visible-comments', (_cm, md, ns) => {
 	});
 }, [
 	new BooleanSetting('bundle-comments', false), // TODO: Implement this
-	new BooleanSetting('original-comment-button', false) // TODO: Implement this
+	new BooleanSetting('original-comment-button', false),
+	new BooleanSetting('comment-opened-default', false),
+	new BooleanSetting('hover-opens-comments', true),
+	new BooleanSetting('markdown-in-comments', false), // TODO: Implement this
 ]).setDescription('Make comments visible in the editor').register();
 
 new Feature('markdownit-tweaks', (_cm, md, ns) => {
@@ -729,15 +776,15 @@ new Feature('drag-n-drop-email', (cm, _md, ns) => {
 		return new Promise((resolve, _reject) => {
 			let reader = new FileReader();
 			reader.addEventListener('load', () => {
-				let [header_section, _message_body] = reader.result.split(/\r\n\r\n/);
-				header_section = header_section.replaceAll(/\r\n\s+/g, ' ');
-				let lines = header_section.split('\r\n');
+				let [headerSection, _messageBody] = reader.result.split(/\r\n\r\n/);
+				headerSection = headerSection.replaceAll(/\r\n\s+/g, ' ');
+				let lines = headerSection.split('\r\n');
 				let headers = {};
 				for (let j = 0; j < lines.length; j++) {
 					let line = lines[j].trim();
-					let [header_field, value] = line.split(/\:(.*)/s).map(s => s.trim());
-					if (header_field) {
-						headers[header_field] = value;
+					let [headerField, value] = line.split(/\:(.*)/s).map(s => s.trim());
+					if (headerField) {
+						headers[headerField] = value;
 					}
 				}
 				let date = (new Date(headers['Date'])).toISOString().slice(0, 10);
@@ -880,7 +927,7 @@ new Feature('clean-publishing', (cm, _md, _ns) => {
 				return text.replace(/<!--.*?-->/gs, '');
 			},
 			(text) => { // cleanupAbbreveations
-				return text.replace(/\*\[[^\n]+?\]: .+?\n/gs, '');
+				return text.replace(/\*\[[^\n]+?\]: .+?\n/gs, '').replace(/\*\[[^\n]+?\]: [^\n]+$/gs, '');
 			},
 			(text) => { // cleanupBlocks
 				return text.replace(/:::.*\n[\s\S]*?\n:::/gs, '');
@@ -996,7 +1043,7 @@ new Feature('clean-publishing', (cm, _md, _ns) => {
 		document.body.appendChild(modal);
 	});
 }).setDescription(
-	'Modify the publish button to open a dialog with a cleaned version of the document ' + 
+	'Modify the publish button to open a dialog with a cleaned version of the document ' +
 	'because our protocol parser is not able to handle most of the HedgeDoc/ProtocolDroid features.'
 ).register();
 
