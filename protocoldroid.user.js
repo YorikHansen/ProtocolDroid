@@ -1,7 +1,7 @@
 // ==UserScript==
-// @name            Protocol Droid
+// @name            ProtocolDroid
 // @namespace       https://protocoldroid.yorik.dev/
-// @version         0.0.9
+// @version         0.0.10
 // @description     A client side HedgeDoc extension that helps with protocols.
 // @author          Yorik Hansen
 // @homepage        https://github.com/YorikHansen/ProtocolDroid
@@ -25,6 +25,7 @@
 // TODO: Ctrl + # to comment out selected lines (replace <!-- and --> with <\!-- and --\>) and vice versa
 // TODO: Move settings menu to feature (?) // But how would one reenable it?
 // TODO: Make less verbose
+// TODO: Translation (language is in `locale`-Cookie)
 
 class Setting { // TODO: Load from storage
 	static _SETTINGS = {};
@@ -184,7 +185,8 @@ class StringSetting extends Setting {
 
 
 class Feature {
-	static FEATURES = [];
+	static _precedences = [];
+	static _features = [];
 
 	constructor(name, code, options = [], enabledByDefault = true) {
 		if (!name.match(/^[a-z][a-z0-9]*(?:\-[a-z0-9]+)+$/i)) {
@@ -199,7 +201,7 @@ class Feature {
 		this.description = '';
 	}
 
-	register() {
+	register(precedence = 0) {
 		Setting.add(
 			new BooleanSetting(['features', this.name], this.enabledByDefault)
 		);
@@ -209,7 +211,7 @@ class Feature {
 			)
 		));
 
-		return Feature.add(this);
+		return Feature.add(this, precedence);
 	}
 
 	load(cm, md, _ns) {
@@ -224,12 +226,20 @@ class Feature {
 		return this;
 	};
 
-	static add(feature) {
-		Feature.FEATURES.push(feature);
+	static add(feature, precedence = 0) {
+		if (!(precedence in Feature._features)) {
+			Feature._precedences.push(precedence);
+			Feature._features[precedence] = [];
+		}
+		Feature._features[precedence].push(feature);
 	}
 
 	static loadAll(cm, md) {
-		Feature.FEATURES.forEach(feature => feature.load(cm, md, ''));
+		Feature._precedences.sort();
+		for (let i = Feature._precedences.length - 1; i >= 0; i--) {
+			Feature._features[Feature._precedences[i]]
+				.forEach(feature => feature.load(cm, md, ''));
+		}
 	}
 }
 
@@ -713,7 +723,7 @@ new Feature('visible-comments', (cm, md, ns) => {
 	new BooleanSetting('comment-opened-default', false),
 	new BooleanSetting('hover-opens-comments', true),
 	new BooleanSetting('markdown-in-comments', false), // TODO: Implement this
-]).setDescription('Make comments visible in the editor').register();
+]).setDescription('Make comments visible in the editor').register(1);
 
 new Feature('markdownit-tweaks', (_cm, md, ns) => {
 	// Add custom markdown to the renderer
