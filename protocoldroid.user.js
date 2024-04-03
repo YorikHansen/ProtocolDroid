@@ -24,6 +24,7 @@
 // TODO: Document code
 // TODO: Ctrl + # to comment out selected lines (replace <!-- and --> with <\!-- and --\>) and vice versa
 // TODO: Move settings menu to feature (?) // But how would one reenable it?
+// TODO: Make less verbose
 
 class Setting { // TODO: Load from storage
 	static _SETTINGS = {};
@@ -333,6 +334,7 @@ const addModal = (id, title, content, buttons) => {
 // Document settings are most important, they are stored in the yaml-part
 // Instance settings are stored in the localStorage
 // Global settings are stored in the GM storage
+// TODO: Import & Export from/to JSON
 const addSettingMenu = () => {
 	console.log('Adding settings menu');
 
@@ -440,7 +442,7 @@ new Feature('custom-logo-overlay', (_cm, _md, ns) => {
 	new StringSetting('url-night', 'https://protocoldroid.yorik.dev/shades-night.svg')
 ], true).setDescription('Add a custom logo overlay').register(); // TODO: set default to false (because privacy)
 
-new Feature('todo-notes', (_cm, md, _ns) => {
+new Feature('todo-notes', (cm, md, _ns) => {
 	GM_addStyle(`
 		.todo-note {
 			color: #eda35e;
@@ -516,7 +518,6 @@ new Feature('todo-notes', (_cm, md, _ns) => {
 	todoButton.setAttribute('aria-haspopup', 'true');
 	todoButton.setAttribute('aria-expanded', 'true');
 	todoButton.addEventListener('click', () => {
-		const cm = unsafeWindow.editor;
 		const cursor = cm.getCursor();
 		// TODO: Handle selection replacement
 		if (cursorInHTMLComment(cm, cursor)) {
@@ -531,9 +532,11 @@ new Feature('todo-notes', (_cm, md, _ns) => {
 	getByQuery('.toolbar .btn-group').then(el => el.appendChild(todoButton));
 
 	// TODO: What about <!-- TODO: somethin ~my-name -->? Is this a comment, a TODO or a TODO-comment?
-}).setDescription('Highlight TODO notes in the editor').register();
+}, [
+	new StringSetting('default-color', '#eda35e') // TODO: Implement this // TODO: Implement validity check for settings
+]).setDescription('Highlight TODO notes in the editor').register();
 
-new Feature('visible-comments', (_cm, md, ns) => {
+new Feature('visible-comments', (cm, md, ns) => {
 	GM_addStyle(`
 		.comment {
 			user-select: none;
@@ -677,7 +680,6 @@ new Feature('visible-comments', (_cm, md, ns) => {
 			$('#makeComment').off('click');
 			button.addEventListener('click', () => {
 				const name = document.querySelector('.ui-user-item').querySelector('.ui-user-name').innerText.split(' ', 1)[0];
-				const cm = unsafeWindow.editor;
 				const cursor = cm.getCursor();
 
 				// TODO: If cursor is in visible-comment, add comment after the current one, if it is in a normal comment, add author to the end
