@@ -30,8 +30,8 @@ The script adds a custom logo overlay to the HedgeDoc editor. The logo is displa
 
 #### Options
 
-- `url-no-night`: URL of the logo overlay for the light theme (`https://protocoldroid.yorik.dev/shades-no-night.svg`)
-- `url-night`: URL of the logo overlay for the dark theme (`https://protocoldroid.yorik.dev/shades-night.svg`)
+- `url-no-night`: URL of the logo overlay for the light theme (defaults: `https://protocoldroid.yorik.dev/shades-no-night.svg`)
+- `url-night`: URL of the logo overlay for the dark theme (defaults: `https://protocoldroid.yorik.dev/shades-night.svg`)
 
 
 ### TODO Notes
@@ -57,9 +57,9 @@ The script adds a button to the HedgeDoc editor, that allows you to write commen
 
 #### Options
 
-- `original-comment-button`: Don't overwrite HedgeDocs comment button (`false`)
-- `comment-opened-default`: Open comments by default (`false`)
-- `hover-opens-comments`: Hovering over comments opens them (`true`)
+- `original-comment-button`: Don't overwrite HedgeDocs comment button (defaults: `false`)
+- `comment-opened-default`: Open comments by default (defaults: `false`)
+- `hover-opens-comments`: Hovering over comments opens them (defaults: `true`)
 
 ### MarkdownIt Tweaks
 
@@ -67,7 +67,7 @@ The script adds some tweaks to the MarkdownIt instance, that is used by HedgeDoc
 
 #### Options
 
-- `german-quotes`: Replace English quotes with German quotes (`true`)
+- `german-quotes`: Replace English quotes with German quotes (defaults: `true`)
 
 ### Drag-n-Drop Email
 
@@ -79,7 +79,7 @@ The script adds a print style to the HedgeDoc editor. The print style is optimiz
 
 #### Options
 
-- `save-trees`: Remove unnecessary elements from the print style and make the output as compact as possible (`true`)
+- `save-trees`: Remove unnecessary elements from the print style and make the output as compact as possible (defaults: `true`)
 
 ### Clean Publishing
 
