@@ -30,3 +30,8 @@ this.GM_addStyle ??= style => {
 };
 ```
 
+### Workaround for `unsafeWindow`
+
+```js
+this.unsafeWindow ??= window;
+```
