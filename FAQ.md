@@ -35,3 +35,14 @@ this.GM_addStyle ??= style => {
 ```js
 this.unsafeWindow ??= window;
 ```
+
+### Workaround for `GM_setValue` and `GM_getValue`
+
+```js
+this.GM_setValue ??= (key, value) =>
+    localStorage.setItem(`GM_${key}`, JSON.stringify(value));
+this.GM_getValue ??= (key, defaultValue) => {
+    const value = localStorage.getItem(`GM_${key}`);
+    return value === null ? defaultValue : JSON.parse(value);
+};
+```

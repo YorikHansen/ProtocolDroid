@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ProtocolDroid
 // @namespace       https://protocoldroid.yorik.dev/
-// @version         0.0.10
+// @version         0.0.11
 // @description     A client side HedgeDoc extension that helps with protocols.
 // @author          Yorik Hansen
 // @homepage        https://github.com/YorikHansen/ProtocolDroid
@@ -15,6 +15,8 @@
 // @match           https://md.fachschaften.org/*
 // @run-at          document-body
 // @grant           GM_addStyle
+// @grant           GM_getValue
+// @grant           GM_setValue
 // @grant           GM_xmlhttpRequest
 // @connect         www.fs-infmath.uni-kiel.de
 // ==/UserScript==
@@ -27,7 +29,7 @@
 // TODO: Make less verbose
 // TODO: Translation (language is in `locale`-Cookie)
 
-class Setting { // TODO: Load from storage
+class Setting {
 	static _SETTINGS = {};
 
 	_name;
@@ -37,6 +39,7 @@ class Setting { // TODO: Load from storage
 
 	_input = document.createElement('input');
 	_disabledFn = () => false;
+	_validateFn = () => true; // TODO: Mark invalid functions and don't allow saving if invalid
 
 	constructor(name, defaultValue) {
 		if (this.constructor === Setting) {
@@ -48,7 +51,7 @@ class Setting { // TODO: Load from storage
 		this._name = Setting.#handleName(name);
 		this._defaultValue = defaultValue;
 
-		this._value = this._defaultValue;
+		this._value = GM_getValue(this._name.replace('.', '_'), this._defaultValue);
 		this._liveValue = this._value;
 	}
 
@@ -56,20 +59,36 @@ class Setting { // TODO: Load from storage
 		this._disabledFn = disabledFn;
 		return this;
 	}
+	setValidateFn(validateFn) {
+		this._validateFn = validateFn;
+		return this;
+	}
 
 	toNamespace(ns) {
 		ns = Setting.#handleName(ns);
 		this._name = Setting.#handleName([ns, this._name]);
+		this._value = GM_getValue(this._name.replace('.', '_'), this._defaultValue);
+		this._liveValue = this._value;
 		return this;
+	}
+
+	_setInputElemValue(value) {
+		this._input.value = value;
+	}
+	_getInputElemValue() {
+		return this._input.value;
+	}
+	_setInputElemValid(isValid) {
+		this._input.classList.toggle('is-invalid', !isValid);
 	}
 
 	_prepareInputElement() {
 		this._input.id = this._name;
 		this._input.disabled = this._disabledFn(Setting._SETTINGS);
-		this._input.value = this._liveValue;
+		this._setInputElemValue(this._liveValue);
 
-		this._input.addEventListener('change', () => {
-			this._liveValue = this._input.value;
+		this._input.addEventListener('input', () => {
+			Setting.set(this._name, this._getInputElemValue());
 		});
 	}
 
@@ -79,7 +98,7 @@ class Setting { // TODO: Load from storage
 		label.innerText = this._name;
 
 		this._prepareInputElement();
-		this._input.addEventListener('change', () => {
+		this._input.addEventListener('input', () => {
 			for (let setting in Setting._SETTINGS) {
 				Setting._SETTINGS[setting]._input.disabled = Setting._SETTINGS[setting]._disabledFn(Setting._SETTINGS);
 			}
@@ -108,7 +127,17 @@ class Setting { // TODO: Load from storage
 	static set(name, value) {
 		// TODO: Check if the setting exists and if the value is of the correct type
 		name = Setting.#handleName(name);
-		Setting._SETTINGS[name]._liveValue = value;
+		if (Setting._SETTINGS[name]._disabledFn(Setting._SETTINGS)) {
+			return;
+		}
+		let isValid = Setting._SETTINGS[name]._validateFn(value);
+		Setting._SETTINGS[name]._setInputElemValid(isValid);
+		if (isValid) {
+			Setting._SETTINGS[name]._liveValue = value;
+			if (Setting._SETTINGS[name]._getInputElemValue() !== value) {
+				Setting._SETTINGS[name]._setInputElemValue(value);
+			}
+		}
 	}
 
 	static reset(name) {
@@ -116,9 +145,16 @@ class Setting { // TODO: Load from storage
 		Setting.set(name, Setting.get(name).defaultValue);
 	}
 
+	static cancel(name) {
+		name = Setting.#handleName(name);
+		Setting._SETTINGS[name]._liveValue = Setting._SETTINGS[name]._value;
+		Setting._SETTINGS[name]._setInputElemValue(Setting._SETTINGS[name]._value);
+	}
+
 	static commit(name) {
 		name = Setting.#handleName(name);
 		Setting._SETTINGS[name]._value = Setting._SETTINGS[name]._liveValue;
+		GM_setValue(name.replace('.', '_'), Setting._SETTINGS[name]._value);
 	}
 
 	static resetAll() {
@@ -130,6 +166,12 @@ class Setting { // TODO: Load from storage
 	static commitAll() {
 		for (let setting in Setting._SETTINGS) {
 			Setting.commit(setting);
+		}
+	}
+
+	static cancelAll() {
+		for (let setting in Setting._SETTINGS) {
+			Setting.cancel(setting);
 		}
 	}
 
@@ -154,14 +196,21 @@ class BooleanSetting extends Setting {
 		super(name, defaultValue);
 	}
 
+	_setInputElemValue(value) {
+		this._input.checked = value;
+	}
+	_getInputElemValue() {
+		return this._input.checked;
+	}
+
 	_prepareInputElement() {
 		this._input.id = this._name;
 		this._input.disabled = this._disabledFn(Setting._SETTINGS);
 		this._input.type = 'checkbox';
-		this._input.checked = this._liveValue;
+		this._setInputElemValue(this._liveValue);
 
-		this._input.addEventListener('change', () => {
-			this._liveValue = this._input.checked;
+		this._input.addEventListener('input', () => {
+			Setting.set(this._name, this._getInputElemValue());
 		});
 	}
 }
@@ -171,14 +220,21 @@ class StringSetting extends Setting {
 		super(name, defaultValue);
 	}
 
+	_setInputElemValue(value) {
+		this._input.value = value;
+	}
+	_getInputElemValue() {
+		return this._input.value;
+	}
+
 	_prepareInputElement() {
 		this._input.id = this._name;
 		this._input.disabled = this._disabledFn(Setting._SETTINGS);
 		this._input.type = 'text';
-		this._input.value = this._liveValue;
+		this._setInputElemValue(this._liveValue);
 
-		this._input.addEventListener('change', () => {
-			this._liveValue = this._input.value;
+		this._input.addEventListener('input', () => {
+			Setting.set(this._name, this._getInputElemValue());
 		});
 	}
 }
@@ -368,28 +424,38 @@ const addSettingMenu = () => {
 	// Settings modal
 	let modalContent = Setting.bundleHTML();
 
-	// TODO: Enable settings (when implemented)
-	modalContent = document.createElement('div');
-	modalContent.innerHTML = '<i>Coming soon</i>';
+	let disclaimer = document.createElement('div');
+	disclaimer.innerHTML = '<em>WORK IN PROGRESS</em><hr>';
+	modalContent.prepend(disclaimer);
 
 	let closeButton = document.createElement('button');
 	closeButton.type = 'button';
 	closeButton.classList.add('btn', 'btn-default');
 	closeButton.setAttribute('data-dismiss', 'modal');
-	closeButton.innerText = 'Schließen';
+	closeButton.innerText = 'Abbrechen';
+	closeButton.addEventListener('click', () => {
+		Setting.cancelAll();
+	});
 
 	let resetButton = document.createElement('button');
 	resetButton.type = 'button';
 	resetButton.classList.add('btn', 'btn-danger');
 	resetButton.innerText = 'Zurücksetzen';
+	resetButton.addEventListener('click', () => {
+		Setting.resetAll();
+	});
 
 	let saveButton = document.createElement('button');
 	saveButton.type = 'button';
 	saveButton.classList.add('btn', 'btn-primary');
 	saveButton.innerText = 'Speichern';
+	saveButton.addEventListener('click', () => {
+		Setting.commitAll();
+		window.location.reload();
+	});
 
-	let modal = addModal('pd-settings-modal', 'Einstellungen', modalContent, [closeButton/*, resetButton, saveButton*/]);
-	document.body.appendChild(modal); // TODO: The buttons don't work yet
+	let modal = addModal('pd-settings-modal', 'Einstellungen', modalContent, [closeButton, resetButton, saveButton]);
+	document.body.appendChild(modal);
 
 	// Settings button
 	let button = document.createElement('ul');
@@ -452,10 +518,10 @@ new Feature('custom-logo-overlay', (_cm, _md, ns) => {
 	new StringSetting('url-night', 'https://protocoldroid.yorik.dev/shades-night.svg')
 ], true).setDescription('Add a custom logo overlay').register(); // TODO: set default to false (because privacy)
 
-new Feature('todo-notes', (cm, md, _ns) => {
+new Feature('todo-notes', (cm, md, ns) => {
 	GM_addStyle(`
 		.todo-note {
-			color: #eda35e;
+			color: ${Setting.get([ns, 'default-color']).value};
 		}
 
 		.todo-text::before {
@@ -543,7 +609,7 @@ new Feature('todo-notes', (cm, md, _ns) => {
 
 	// TODO: What about <!-- TODO: somethin ~my-name -->? Is this a comment, a TODO or a TODO-comment?
 }, [
-	new StringSetting('default-color', '#eda35e') // TODO: Implement this // TODO: Implement validity check for settings
+	new StringSetting('default-color', '#eda35e').setValidateFn(v => v.match(/^\#[a-f\d]{3}(?:[a-f\d]{3})?$/gi) !== null),
 ]).setDescription('Highlight TODO notes in the editor').register();
 
 new Feature('visible-comments', (cm, md, ns) => {
@@ -644,7 +710,7 @@ new Feature('visible-comments', (cm, md, ns) => {
 	//  The comment and the author MUST have at least one non-white space character.
 	// TODO: <!-- - ~...--> is valid, but not recognized due to `- ` being used as a comment, so the required white space is not recognized
 	const isComment = /<!--\s*((?:[^-\s]|-[^-]|--[^>])(?:[^-]|-[^-]|--[^>])*)\s+~\s*((?:[^~-\s\n]|-[^-\n]|--[^>\n])(?:[^-\n]|-[^-\n]|--[^>\n])*)\s*-->/;
-
+	const isComments = /(?:(?:<!--\s*((?:[^-\s]|-[^-]|--[^>])(?:[^-]|-[^-]|--[^>])*)\s+~\s*((?:[^~-\s\n]|-[^-\n]|--[^>\n])(?:[^-\n]|-[^-\n]|--[^>\n])*)\s*-->)\s*)+/; // For bundling
 
 	// TODO: Fix error with indented html_blocks
 	md.renderer.rules.html_block = (tokens, idx, options, env, self) => {
@@ -718,11 +784,11 @@ new Feature('visible-comments', (cm, md, ns) => {
 		}
 	});
 }, [
-	new BooleanSetting('bundle-comments', false), // TODO: Implement this
+	// new BooleanSetting('bundle-comments', false), // TODO: Implement this
 	new BooleanSetting('original-comment-button', false),
 	new BooleanSetting('comment-opened-default', false),
 	new BooleanSetting('hover-opens-comments', true),
-	new BooleanSetting('markdown-in-comments', false), // TODO: Implement this
+	// new BooleanSetting('markdown-in-comments', false), // TODO: Implement this
 ]).setDescription('Make comments visible in the editor').register(1);
 
 new Feature('markdownit-tweaks', (_cm, md, ns) => {
@@ -734,7 +800,7 @@ new Feature('markdownit-tweaks', (_cm, md, ns) => {
 	new BooleanSetting('german-quotes', true)
 ]).setDescription('Small tweaks for MarkdownIt').register();
 
-new Feature('drag-n-drop-email', (cm, _md, ns) => {
+new Feature('drag-n-drop-email', (cm, _md, _ns) => {
 	const rfc2047Decode = (encoded) => {
 		let decoded = '';
 		for (let i = 0; i < encoded.length; i++) {
@@ -824,8 +890,8 @@ new Feature('drag-n-drop-email', (cm, _md, ns) => {
 
 	cm.on('drop', dropHandler);
 }, [
-	new StringSetting('email-template', '- `{{date}}`: {{subject}}\n'), // TODO: Implement this
-	new BooleanSetting('fixed-position', false) // TODO: Implement this
+	// new StringSetting('email-template', '- `{{date}}`: {{subject}}\n'), // TODO: Implement this
+	// new BooleanSetting('fixed-position', false) // TODO: Implement this
 ]).setDescription('Drag and drop emails into the editor').register();
 
 
@@ -1069,11 +1135,9 @@ new Feature('clean-publishing', (cm, _md, _ns) => {
 
 	addSettingMenu();
 
-	getCodeMirror().then((cm) => {
-		console.log('CodeMirror found');
-		getMardownIt().then((md) => {
-			console.log('MarkdownIt found');
-			Feature.loadAll(cm, md);
-		});
-	});
+	getCodeMirror().then(
+		(cm) => getMardownIt().then(
+			(md) => Feature.loadAll(cm, md)
+		)
+	);
 })();

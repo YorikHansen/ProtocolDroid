@@ -19,7 +19,13 @@ Please see the [FAQ](FAQ.md) for more information.
 
 ## Configuration
 
-*Coming soon*
+*This is WIP*
+
+You can enable or disable every feature of the script in the settings menu. Access the settings menu by clicking on the gears in the top right corner of the website.
+
+Some features have additional options, that can be configured in the settings menu.
+
+Note, that the settings are stored in the browser and are not synced between devices.
 
 
 ## Features
