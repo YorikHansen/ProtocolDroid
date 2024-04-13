@@ -16,6 +16,12 @@ As long as your mobile browser supports userscript managers, ProtocolDroid shoul
 ProtocolDroid is designed for protocol writing of Kiel Universities computer science student organisation. Therefore, some features might be very specific to this and only this use case.
 
 
+## How do I build the script?
+
+You can build the script by running `npm run build`. The script will be built to the `dist` directory.
+You may want to change the headers in `src/headers.js` to fit your needs.
+
+
 ## How do I use the script withouth a userscript manager?
 
 ProtocolDroid uses APIs, that are not available in a normal browser environment. You can inject the following workarounds before the script to keep the script working:
