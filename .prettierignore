@@ -1,0 +1,8 @@
+# Ignore generated output
+dist
+# Ignore Markdown files
+**/*.md
+
+# Ignore dependencies and git files
+**/.git
+**/node_modules
