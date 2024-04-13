@@ -1,0 +1,19 @@
+{
+  "name": "protocoldroid",
+  "version": "0.1.0",
+  "description": "**ProtocolDroid** is a user script, that adds features to the [CodeMirror](https://codemirror.net/) and [Markdown-It](https://markdown-it.github.io/) instances, that are used by [HedgeDoc](https://hedgedoc.org/).",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "build": "webpack",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Yorik Hansen",
+  "license": "ISC",
+  "devDependencies": {
+    "style-loader": "^4.0.0",
+    "webpack-cli": "^5.1.4",
+    "webpack-userscript": "^3.2.2"
+  }
+}

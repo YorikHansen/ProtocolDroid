@@ -1,0 +1,27 @@
+{
+	"name": "ProtocolDroid",
+	"namespace": "https://protocoldroid.yorik.dev/",
+	"version": "0.1.0",
+	"description": "A client side HedgeDoc extension that helps with protocols.",
+	"author": "Yorik Hansen",
+	"homepage": "https://github.com/YorikHansen/ProtocolDroid",
+	"updateURL": "https://github.com/YorikHansen/ProtocolDroid/raw/main/protocoldroid.meta.js",
+	"downloadURL": "https://github.com/YorikHansen/ProtocolDroid/raw/main/protocoldroid.user.js",
+	"icon": "https://www.fs-infmath.uni-kiel.de/codimd/icons/favicon.ico",
+	"match": [
+		"https://www.fs-infmath.uni-kiel.de/codimd/*",
+		"https://codimd.fs-infmath.uni-kiel.de/*",
+		"https://md.kif.rocks/*",
+		"https://md.fachschaften.org/*"
+	],
+	"run-at": "document-body",
+	"grant": [
+		"GM_addStyle",
+		"GM_getValue",
+		"GM_setValue",
+		"GM_xmlhttpRequest"
+	],
+	"connect": [
+		"www.fs-infmath.uni-kiel.de"
+	]
+}
