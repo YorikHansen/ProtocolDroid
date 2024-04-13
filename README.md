@@ -10,7 +10,7 @@ The script is designed for protocol writing of Kiel Universities computer scienc
 ## Installation
 
 1. Install a userscript manager like [Violentmonkey](https://violentmonkey.github.io/).
-2. Install the script [protocoldroid.user.js](https://github.com/YorikHansen/ProtocolDroid/raw/main/protocoldroid.user.js) by clicking on the link.
+2. Install the script [`dist/protocoldroid.user.js`](https://github.com/YorikHansen/ProtocolDroid/raw/main/dist/protocoldroid.user.js) by clicking on the link *(not `protocoldroid.user.js` in the root directory)*.
 3. You may need to edit the script to fit your needs (i.e. change the `@match` directive).
 4. Reload the HedgeDoc page.
 
