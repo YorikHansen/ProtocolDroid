@@ -23,9 +23,15 @@
 // ==/UserScript==
 
 const warnInConsole = () => {
-	console.warn("%c" + "This version if ProtocolDroid is deprecated", "font-size: 36px; font-weight: bold; color: yellow;");
-	console.warn("%c" + "Please update to the latest version of ProtocolDroid!", "font-size: 24px; font-weight: bold; color: yellow;");
-}
+	console.warn(
+		'%c' + 'This version if ProtocolDroid is deprecated',
+		'font-size: 36px; font-weight: bold; color: yellow;',
+	);
+	console.warn(
+		'%c' + 'Please update to the latest version of ProtocolDroid!',
+		'font-size: 24px; font-weight: bold; color: yellow;',
+	);
+};
 
 const openPopup = () => {
 	const fullscreenBlock = document.createElement('div');
@@ -54,12 +60,15 @@ const openPopup = () => {
 	fullscreenBlock.style.zIndex = '2000000001';
 	fullscreenBlock.appendChild(popup);
 	document.body.appendChild(fullscreenBlock);
-	document.getElementById('protocoldroid-popup-close').addEventListener('click', () => {
-		confirm('Do you really want to continue without updating?') && fullscreenBlock.remove();
-	});
+	document
+		.getElementById('protocoldroid-popup-close')
+		.addEventListener('click', () => {
+			confirm('Do you really want to continue without updating?') &&
+				fullscreenBlock.remove();
+		});
 
 	warnInConsole();
 	setTimeout(warnInConsole, 5000);
-}
+};
 
 document.addEventListener('DOMContentLoaded', openPopup);

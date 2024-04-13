@@ -25,48 +25,58 @@ module.exports = new Feature('clean-publishing', (cm, _md, _ns) => {
 		}
 	`);
 
-
-	const cleanup = (text) => {
+	const cleanup = text => {
 		// TODO: Don't remove stuff in code-blocks
-		[ // TODO: Move this to options
-			(text) => { // cleanupComments
+		[
+			// TODO: Move this to options
+			text => {
+				// cleanupComments
 				return text.replace(/<!--.*?-->/gs, '');
 			},
-			(text) => { // cleanupAbbreveations
-				return text.replace(/\*\[[^\n]+?\]: .+?\n/gs, '').replace(/\*\[[^\n]+?\]: [^\n]+$/gs, '');
+			text => {
+				// cleanupAbbreveations
+				return text
+					.replace(/\*\[[^\n]+?\]: .+?\n/gs, '')
+					.replace(/\*\[[^\n]+?\]: [^\n]+$/gs, '');
 			},
-			(text) => { // cleanupBlocks
+			text => {
+				// cleanupBlocks
 				return text.replace(/:::.*\n[\s\S]*?\n:::/gs, '');
 			},
-			(text) => { // cleanupEmojis
+			text => {
+				// cleanupEmojis
 				return text.replace(/:\S+:/g, '');
 			},
-			(text) => { // cleanupYAML
+			text => {
+				// cleanupYAML
 				return text.replace(/^---\n[\s\S]*?\n---/gs, '');
 			},
-			(text) => { // cleanupHTML
+			text => {
+				// cleanupHTML
 				// TODO: Should this also remove the content?
 				return text.replace(/(?:<(?:[^>]+)>)/gi, '');
 			},
-			(text) => { // cleanupWhitespaceBeginningAndEnd
+			text => {
+				// cleanupWhitespaceBeginningAndEnd
 				return text.replace(/^\s+|\s+$/g, '');
 			},
-			(text) => { // removeMultipleNewlines
+			text => {
+				// removeMultipleNewlines
 				return text.replace(/\n\n+/g, '\n\n');
-			}
-		].forEach((cleanupFn) => {
+			},
+		].forEach(cleanupFn => {
 			text = cleanupFn(text);
 		});
 		return text;
 	};
 
 	const publishButtons = document.querySelectorAll('.ui-publish');
-	publishButtons.forEach((publishButton) => {
+	publishButtons.forEach(publishButton => {
 		// Store original attributes
 		const originalLink = {
 			href: publishButton.href,
 			target: publishButton.target,
-			rel: publishButton.rel
+			rel: publishButton.rel,
 		};
 
 		// Remove original attributes
@@ -80,7 +90,8 @@ module.exports = new Feature('clean-publishing', (cm, _md, _ns) => {
 		publishButton.setAttribute('data-toggle', 'modal');
 		publishButton.setAttribute('data-target', '#pd-publish-modal');
 
-		publishButton.innerHTML = '<i class="fa fa-upload fa-fw"></i> Veröffentlichen';
+		publishButton.innerHTML =
+			'<i class="fa fa-upload fa-fw"></i> Veröffentlichen';
 
 		// Add modal
 		let modalTitle = document.createElement('h4');
@@ -134,21 +145,26 @@ module.exports = new Feature('clean-publishing', (cm, _md, _ns) => {
 		const updateCode = () => {
 			let text = cleanup(cm.getValue());
 			codeElement.innerText = text;
-			downloadButton.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(text);
+			downloadButton.href =
+				'data:text/plain;charset=utf-8,' + encodeURIComponent(text);
 		};
 
 		cm.on('change', updateCode);
 		preElement.appendChild(codeElement);
 		modalContent.appendChild(preElement);
 
-
 		// Append modal to body
-		let modal = ProtocolDroid.addModal('pd-publish-modal', modalTitle, modalContent, [closeButton, downloadButton]);
+		let modal = ProtocolDroid.addModal(
+			'pd-publish-modal',
+			modalTitle,
+			modalContent,
+			[closeButton, downloadButton],
+		);
 		$(modal).on('shown.bs.modal', updateCode);
 
 		document.body.appendChild(modal);
 	});
 }).setDescription(
 	'Modify the publish button to open a dialog with a cleaned version of the document ' +
-	'because our protocol parser is not able to handle most of the HedgeDoc/ProtocolDroid features.'
+		'because our protocol parser is not able to handle most of the HedgeDoc/ProtocolDroid features.',
 );

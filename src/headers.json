@@ -15,13 +15,6 @@
 		"https://md.fachschaften.org/*"
 	],
 	"run-at": "document-body",
-	"grant": [
-		"GM_addStyle",
-		"GM_getValue",
-		"GM_setValue",
-		"GM_xmlhttpRequest"
-	],
-	"connect": [
-		"www.fs-infmath.uni-kiel.de"
-	]
+	"grant": ["GM_addStyle", "GM_getValue", "GM_setValue", "GM_xmlhttpRequest"],
+	"connect": ["www.fs-infmath.uni-kiel.de"]
 }

@@ -13,9 +13,8 @@ const Feature = require('./Feature.js');
 // TODO: Feature codemirror-commands
 // TODO: Feature user-mentions
 
-
 class ProtocolDroid {
-	static getByQuery = (query) => {
+	static getByQuery = query => {
 		return new Promise((resolve, _reject) => {
 			const interval = setInterval(() => {
 				const el = document.querySelector(query);
@@ -26,7 +25,7 @@ class ProtocolDroid {
 			}, 100);
 		});
 	};
-	
+
 	static getCodeMirror = () => {
 		return new Promise((resolve, _reject) => {
 			const interval = setInterval(() => {
@@ -37,7 +36,7 @@ class ProtocolDroid {
 			}, 100);
 		});
 	};
-	
+
 	static getMardownIt = () => {
 		return new Promise((resolve, _reject) => {
 			const interval = setInterval(() => {
@@ -48,7 +47,7 @@ class ProtocolDroid {
 			}, 100);
 		});
 	};
-	
+
 	static addModal = (id, title, content, buttons) => {
 		let modal = document.createElement('div');
 		modal.classList.add('modal', 'fade');
@@ -71,7 +70,7 @@ class ProtocolDroid {
 		closeButton.setAttribute('aria-label', 'Close');
 		closeButton.innerHTML = '<span aria-hidden="true">&times;</span>';
 		modalHeader.appendChild(closeButton);
-	
+
 		if (title instanceof HTMLElement) {
 			if (!title.classList.contains('modal-header')) {
 				title.classList.add('modal-title');
@@ -109,8 +108,8 @@ class ProtocolDroid {
 		modalDialog.appendChild(modalContent);
 		modal.appendChild(modalDialog);
 		return modal;
-	}
-	
+	};
+
 	// TODO: Somehow respect global, instance and document settings
 	// Document settings are most important, they are stored in the yaml-part
 	// Instance settings are stored in the localStorage
@@ -118,7 +117,7 @@ class ProtocolDroid {
 	// TODO: Import & Export from/to JSON
 	static addSettingMenu = () => {
 		console.log('Adding settings menu');
-	
+
 		GM_addStyle(`
 			#short-online-user-list {
 				line-height: 1;
@@ -135,14 +134,14 @@ class ProtocolDroid {
 				}
 			}
 		`);
-	
+
 		// Settings modal
 		let modalContent = Setting.bundleHTML();
-	
+
 		let disclaimer = document.createElement('div');
 		disclaimer.innerHTML = '<em>WORK IN PROGRESS</em><hr>';
 		modalContent.prepend(disclaimer);
-	
+
 		let closeButton = document.createElement('button');
 		closeButton.type = 'button';
 		closeButton.classList.add('btn', 'btn-default');
@@ -151,7 +150,7 @@ class ProtocolDroid {
 		closeButton.addEventListener('click', () => {
 			Setting.cancelAll();
 		});
-	
+
 		let resetButton = document.createElement('button');
 		resetButton.type = 'button';
 		resetButton.classList.add('btn', 'btn-danger');
@@ -159,7 +158,7 @@ class ProtocolDroid {
 		resetButton.addEventListener('click', () => {
 			Setting.resetAll();
 		});
-	
+
 		let saveButton = document.createElement('button');
 		saveButton.type = 'button';
 		saveButton.classList.add('btn', 'btn-primary');
@@ -168,24 +167,35 @@ class ProtocolDroid {
 			Setting.commitAll();
 			window.location.reload();
 		});
-	
-		let modal = ProtocolDroid.addModal('pd-settings-modal', 'Einstellungen', modalContent, [closeButton, resetButton, saveButton]);
+
+		let modal = ProtocolDroid.addModal(
+			'pd-settings-modal',
+			'Einstellungen',
+			modalContent,
+			[closeButton, resetButton, saveButton],
+		);
 		document.body.appendChild(modal);
-	
+
 		// Settings button
 		let button = document.createElement('ul');
 		button.classList.add('nav', 'navbar-nav', 'navbar-form', 'navbar-right');
-		button.style = 'padding: 0;'
-		button.innerHTML = '<span class="btn btn-link ui-settings" title="Einstellungen" data-toggle="modal" data-target="#pd-settings-modal"><i class="fa fa-gears"></i></span>';
-	
+		button.style = 'padding: 0;';
+		button.innerHTML =
+			'<span class="btn btn-link ui-settings" title="Einstellungen" data-toggle="modal" data-target="#pd-settings-modal"><i class="fa fa-gears"></i></span>';
+
 		let mobileButton = document.createElement('div');
 		mobileButton.classList.add('nav-mobile', 'pull-right', 'visible-xs');
-		mobileButton.innerHTML = '<a class="btn btn-link ui-settings" title="Einstellungen" data-toggle="modal" data-target="#pd-settings-modal"><i class="fa fa-gears"></i></a>';
-	
-		ProtocolDroid.getByQuery('.nav.navbar-nav.navbar-right').then(elem => elem.after(button));
-		ProtocolDroid.getByQuery('.nav-mobile.pull-right.visible-xs').then(elem => elem.before(mobileButton));
+		mobileButton.innerHTML =
+			'<a class="btn btn-link ui-settings" title="Einstellungen" data-toggle="modal" data-target="#pd-settings-modal"><i class="fa fa-gears"></i></a>';
+
+		ProtocolDroid.getByQuery('.nav.navbar-nav.navbar-right').then(elem =>
+			elem.after(button),
+		);
+		ProtocolDroid.getByQuery('.nav-mobile.pull-right.visible-xs').then(elem =>
+			elem.before(mobileButton),
+		);
 	};
-	
+
 	static cursorInHTMLComment = (cm, cursor) => {
 		const start = cursor.line;
 		let i = start + 1;

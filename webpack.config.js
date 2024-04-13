@@ -8,7 +8,9 @@ module.exports = {
 		filename: 'protocoldroid.user.js',
 		path: path.resolve(__dirname, 'dist'),
 	},
-	plugins: [new UserscriptPlugin({
-		headers: './src/headers.json',
-	})],
+	plugins: [
+		new UserscriptPlugin({
+			headers: './src/headers.json',
+		}),
+	],
 };

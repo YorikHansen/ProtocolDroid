@@ -4,8 +4,10 @@ const Setting = require('../base/Setting.js');
 const BooleanSetting = require('../base/BooleanSetting.js');
 const StringSetting = require('../base/StringSetting.js');
 
-module.exports = new Feature('print-style', (_cm, _md, ns) => {
-	GM_addStyle(`
+module.exports = new Feature(
+	'print-style',
+	(_cm, _md, ns) => {
+		GM_addStyle(`
 		@media print {
 			abbr[title] {
 				text-decoration: none;
@@ -68,8 +70,8 @@ module.exports = new Feature('print-style', (_cm, _md, ns) => {
 			}
 		}
 	`);
-	if (Setting.get([ns, 'save-trees']).value) {
-		GM_addStyle(`
+		if (Setting.get([ns, 'save-trees']).value) {
+			GM_addStyle(`
 			@media print {
 				.markdown-body ul ul,
 				.markdown-body ol ol {
@@ -77,8 +79,8 @@ module.exports = new Feature('print-style', (_cm, _md, ns) => {
 				}
 			}
 		`);
-	}
-	// TODO: Show abbr on first occurence, hide on second
-}, [
-	new BooleanSetting('save-trees', true)
-]).setDescription('Add a print style');
+		}
+		// TODO: Show abbr on first occurence, hide on second
+	},
+	[new BooleanSetting('save-trees', true)],
+).setDescription('Add a print style');

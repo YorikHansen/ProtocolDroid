@@ -12,9 +12,7 @@ class Setting {
 
 	constructor(name, defaultValue) {
 		if (this.constructor === Setting) {
-			throw new TypeError(
-				'Cannot create instance of abstract class Setting'
-			);
+			throw new TypeError('Cannot create instance of abstract class Setting');
 		}
 
 		this._name = Setting.#handleName(name);
@@ -69,7 +67,9 @@ class Setting {
 		this._prepareInputElement();
 		this._input.addEventListener('input', () => {
 			for (let setting in Setting._SETTINGS) {
-				Setting._SETTINGS[setting]._input.disabled = Setting._SETTINGS[setting]._disabledFn(Setting._SETTINGS);
+				Setting._SETTINGS[setting]._input.disabled = Setting._SETTINGS[
+					setting
+				]._disabledFn(Setting._SETTINGS);
 			}
 		});
 
@@ -89,7 +89,7 @@ class Setting {
 		return {
 			value: Setting._SETTINGS[name]._value,
 			defaultValue: Setting._SETTINGS[name]._defaultValue,
-			liveValue: Setting._SETTINGS[name]._liveValue
+			liveValue: Setting._SETTINGS[name]._liveValue,
 		};
 	}
 
@@ -144,7 +144,8 @@ class Setting {
 		}
 	}
 
-	static bundleHTML() { // TODO: Ordering
+	static bundleHTML() {
+		// TODO: Ordering
 		let html = document.createElement('div');
 		for (let setting in Setting._SETTINGS) {
 			html.appendChild(Setting._SETTINGS[setting].getDOMElement());
