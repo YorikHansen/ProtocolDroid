@@ -1,5 +1,7 @@
 const path = require('path');
 const { UserscriptPlugin } = require('webpack-userscript');
+const pkg = require('./package.json');
+const headers = require('./src/headers.json');
 
 module.exports = {
 	mode: 'production',
@@ -10,7 +12,13 @@ module.exports = {
 	},
 	plugins: [
 		new UserscriptPlugin({
-			headers: './src/headers.json',
+			headers: {
+				...headers,
+				version: pkg.version,
+				author: pkg.author.name,
+				homepage: pkg.homepage,
+			},
+			pretty: true,
 		}),
 	],
 };

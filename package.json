@@ -1,7 +1,19 @@
 {
 	"name": "protocoldroid",
-	"version": "0.1.1",
-	"description": "**ProtocolDroid** is a user script, that adds features to the [CodeMirror](https://codemirror.net/) and [Markdown-It](https://markdown-it.github.io/) instances, that are used by [HedgeDoc](https://hedgedoc.org/).",
+	"version": "0.1.2",
+	"description": "A client side HedgeDoc extension that helps with protocols.",
+	"author": {
+		"name": "Yorik Hansen",
+		"email": "protocoldroid@yorik.dev",
+		"url": "https://yorik.dev/"
+	},
+	"homepage": "https://protocoldroid.yorik.dev/",
+	"license": "ISC",
+	"keywords": [],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/YorikHansen/ProtocolDroid.git"
+	},
 	"private": true,
 	"type": "commonjs",
 	"scripts": {
@@ -9,9 +21,6 @@
 		"format": "prettier --write .",
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
-	"keywords": [],
-	"author": "Yorik Hansen",
-	"license": "ISC",
 	"devDependencies": {
 		"prettier": "3.2.5",
 		"style-loader": "^4.0.0",
