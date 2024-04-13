@@ -1,6 +1,6 @@
 {
   "name": "protocoldroid",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "**ProtocolDroid** is a user script, that adds features to the [CodeMirror](https://codemirror.net/) and [Markdown-It](https://markdown-it.github.io/) instances, that are used by [HedgeDoc](https://hedgedoc.org/).",
   "private": true,
   "type": "commonjs",
