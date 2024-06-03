@@ -31,7 +31,6 @@ module.exports = new Feature(
 				mask-origin: content-box;
 				mask-mode: luminance;
 				mask-composite: exclude;
-				filter: saturate(2) !important;
 			}
 
 			.header-brand img {
@@ -43,7 +42,7 @@ module.exports = new Feature(
 			}
 
 			body.night .header-brand {
-				filter: saturate(2) !important;
+				filter: saturate(2);
 			}
 		`);
 	},
