@@ -17,19 +17,19 @@ module.exports = new Feature(
 		GM_addStyle(`
 			/* make the Logo rainbow colored */
 			.header-brand {
-				background-image: linear-gradient(-220deg,
-					#FE0000 16.66%, 
-					#FD8C00 16.66%, 33.33%, 
-					#FFD000 33.33%, 50%, 
-					#119F0B 50%, 66.66%, 
-					#457CDF 66.66%, 83.33%, 
-					#C22EDC 83.33%
-				);
+				background-image: linear-gradient(
+                    #fe0000 24.7%,
+                    #fd8c00 24.7%, 37.35%,
+                    #ffd000 37.35%, 50%,
+                    #119f0b 50%, 62.65%,
+                    #457cdf 62.65%, 75.3%,
+                    #c22edc 75.3%
+                );
 				mask: ${logoNightImgs
 					.map(img => `url(${img.src}) center/contain no-repeat`)
 					.join(', ')};
 				mask-origin: content-box;
-				mask-mode: luminance;
+				mask-mode: luminance, alpha;
 				mask-composite: exclude;
 			}
 
