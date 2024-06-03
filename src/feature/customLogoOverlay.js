@@ -8,10 +8,10 @@ module.exports = new Feature(
 	'custom-logo-overlay',
 	(_cm, _md, ns) => {
 		GM_addStyle(`
-		.custom-logo-overlay {
-			transform: translateY(-100%);
-		}
-	`);
+			.custom-logo-overlay {
+				transform: translateY(-100%);
+			}
+		`);
 
 		let logoNoNight = document.createElement('img');
 		logoNoNight.classList.add('h-100', 'custom-logo-overlay', 'no-night');
