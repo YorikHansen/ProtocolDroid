@@ -10,7 +10,7 @@ module.exports = new Feature(
 		GM_addStyle(`
 			/* Custom font for CodeMirror */
 			.CodeMirror {
-				font-family: ${Setting.get([ns, 'custom-font']).value};
+				font-family: ${Setting.get([ns, 'custom-font']).value} !important;
 			}
 		`);
 	},
