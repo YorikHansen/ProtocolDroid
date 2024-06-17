@@ -30,6 +30,14 @@ Note, that the settings are stored in the browser and are not synced between dev
 
 ## Features
 
+### CodeMirror Tweaks
+
+The script adds some tweaks to the CodeMirror instance, that is used by HedgeDoc.
+
+#### Options
+
+- `custom-font`: What font should be used in the editor (defaults: `"JetBrains Mono", "Fira Code", "Hack", "Menlo", "Monaco", "Source Code Pro", "Courier New", "Consolas", monospace`)
+
 ### Custom Logo Overlay
 
 The script adds a custom logo overlay to the HedgeDoc editor. The logo is displayed in the top right corner of the editor and can be configured in the script.
