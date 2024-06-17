@@ -9,11 +9,13 @@ const prideLogoFeature = require('./feature/prideLogo');
 const printStyleFeature = require('./feature/printStyle');
 const todoNotesFeature = require('./feature/todoNotes');
 const visibleCommentsFeature = require('./feature/visibleComments');
+const codemirrorTweaks = require('./feature/codemirrorTweaks');
 
 (function () {
 	'use strict';
 
 	cleanPublishingFeature.register();
+	codemirrorTweaks.register();
 	customLogoOverlayFeature.register(1);
 	dragNDropEmailFeature.register();
 	markdownitTweaksFeature.register();
