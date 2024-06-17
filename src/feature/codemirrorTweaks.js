@@ -14,5 +14,10 @@ module.exports = new Feature(
 			}
 		`);
 	},
-	[new StringSetting('custom-font', '"JetBrains Mono", "Fira Code", "Hack", "Menlo", "Monaco", "Source Code Pro", "Courier New", "Consolas", monospace')],
+	[
+		new StringSetting(
+			'custom-font',
+			'"JetBrains Mono", "Fira Code", "Hack", "Menlo", "Monaco", "Source Code Pro", "Courier New", "Consolas", monospace',
+		),
+	],
 ).setDescription('Small tweaks for CodeMirror');
