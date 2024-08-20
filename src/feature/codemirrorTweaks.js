@@ -7,6 +7,22 @@ const StringSetting = require('../base/StringSetting.js');
 module.exports = new Feature(
 	'codemirror-tweaks',
 	(_cm, _md, ns) => {
+		const fontURLs = {
+			jetbrainsMono: {
+				regular: 'JetBrainsMonoRegular',
+				bold: 'JetBrainsMonoBold',
+				italic: 'JetBrainsMonoItalic',
+				boldItalic: 'JetBrainsMonoBoldItalic',
+			},
+			firaCode: {
+				light: 'FiraCodeLight',
+				regular: 'FiraCodeRegular',
+				medium: 'FiraCodeMedium',
+				semiBold: 'FiraCodeSemiBold',
+				bold: 'FiraCodeBold',
+			},
+		};
+
 		GM_addStyle(`
 			@font-face {
 				font-family: 'JetBrains Mono';
@@ -14,7 +30,7 @@ module.exports = new Feature(
 				font-weight: 400;
 				font-display: swap;
 				src: local('JetBrains Mono'), 
-					url(https://protocoldroid.yorik.dev/fonts/jetbrains-mono/JetBrainsMono-Regular.woff2) format('woff2');
+					url('${GM_getResourceURL(fontURLs.jetbrainsMono.regular)}') format('woff2');
 			}
 
 			@font-face {
@@ -23,7 +39,7 @@ module.exports = new Feature(
 				font-weight: 700;
 				font-display: swap;
 				src: local('JetBrains Mono'), 
-					url(https://protocoldroid.yorik.dev/fonts/jetbrains-mono/JetBrainsMono-Bold.woff2) format('woff2');
+					url('${GM_getResourceURL(fontURLs.jetbrainsMono.bold)}') format('woff2');
 			}
 
 			@font-face {
@@ -32,7 +48,7 @@ module.exports = new Feature(
 				font-weight: 400;
 				font-display: swap;
 				src: local('JetBrains Mono'),
-					url(https://protocoldroid.yorik.dev/fonts/jetbrains-mono/JetBrainsMono-Italic.woff2) format('woff2');
+					url('${GM_getResourceURL(fontURLs.jetbrainsMono.italic)}') format('woff2');
 			}
 
 			@font-face {
@@ -41,13 +57,13 @@ module.exports = new Feature(
 				font-weight: 700;
 				font-display: swap;
 				src: local('JetBrains Mono'),
-					url(https://protocoldroid.yorik.dev/fonts/jetbrains-mono/JetBrainsMono-BoldItalic.woff2) format('woff2');
+					url('${GM_getResourceURL(fontURLs.jetbrainsMono.boldItalic)}') format('woff2');
 			}
 
 			@font-face {
 			font-family: 'Fira Code';
 				src: local('Fira Code'), 
-					url('https://protocoldroid.yorik.dev/fonts/fira-code/FiraCode-Light.woff2') format('woff2');
+					url('${GM_getResourceURL(fontURLs.firaCode.light)}') format('woff2');
 				font-weight: 300;
 				font-style: normal;
 			}
@@ -55,7 +71,7 @@ module.exports = new Feature(
 			@font-face {
 				font-family: 'Fira Code';
 				src: local('Fira Code'), 
-					url('https://protocoldroid.yorik.dev/fonts/fira-code/FiraCode-Regular.woff2') format('woff2');
+					url('${GM_getResourceURL(fontURLs.firaCode.regular)}') format('woff2');
 				font-weight: 400;
 				font-style: normal;
 			}
@@ -63,7 +79,7 @@ module.exports = new Feature(
 			@font-face {
 				font-family: 'Fira Code';
 				src: local('Fira Code'), 
-					url('https://protocoldroid.yorik.dev/fonts/fira-code/FiraCode-Medium.woff2') format('woff2');
+					url('${GM_getResourceURL(fontURLs.firaCode.medium)}') format('woff2');
 				font-weight: 500;
 				font-style: normal;
 			}
@@ -71,7 +87,7 @@ module.exports = new Feature(
 			@font-face {
 				font-family: 'Fira Code';
 				src: local('Fira Code'), 
-					url('https://protocoldroid.yorik.dev/fonts/fira-code/FiraCode-SemiBold.woff2') format('woff2');
+					url('${GM_getResourceURL(fontURLs.firaCode.semiBold)}') format('woff2');
 				font-weight: 600;
 				font-style: normal;
 			}
@@ -79,56 +95,8 @@ module.exports = new Feature(
 			@font-face {
 				font-family: 'Fira Code';
 				src: local('Fira Code'), 
-					url('https://protocoldroid.yorik.dev/fonts/fira-code/FiraCode-Bold.woff2') format('woff2');
+					url('${GM_getResourceURL(fontURLs.firaCode.bold)}') format('woff2');
 				font-weight: 700;
-				font-style: normal;
-			}
-
-			@font-face {
-				font-family: 'Hack';
-				src: local('Hack'), 
-					url('https://protocoldroid.yorik.dev/fonts/hack/Hack-Regular.ttf') format('ttf');
-				font-weight: 400;
-				font-style: normal;
-			}
-
-			@font-face {
-				font-family: 'Hack';
-				src: local('Hack'), 
-					url('https://protocoldroid.yorik.dev/fonts/hack/Hack-Bold.ttf') format('ttf');
-				font-weight: 700;
-				font-style: normal;
-			}
-
-			@font-face {
-				font-family: 'Hack';
-				src: local('Hack'), 
-					url('https://protocoldroid.yorik.dev/fonts/hack/Hack-Italic.ttf') format('ttf');
-				font-weight: 400;
-				font-style: italic;
-			}
-
-			@font-face {
-				font-family: 'Hack';
-				src: local('Hack'), 
-					url('https://protocoldroid.yorik.dev/fonts/hack/Hack-BoldItalic.ttf') format('ttf');
-				font-weight: 700;
-				font-style: italic;
-			}
-
-			@font-face {
-				font-family: 'Menlo';
-				src: local('Menlo'), 
-					url('https://protocoldroid.yorik.dev/fonts/menlo/Menlo-Regular.woff') format('woff');
-				font-weight: 400;
-				font-style: normal;
-			}
-
-			@font-face {
-				font-family: 'Monaco';
-				src: local('Monaco'), 
-					url('https://protocoldroid.yorik.dev/fonts/monaco/Monaco.woff') format('woff');
-				font-weight: 400;
 				font-style: normal;
 			}
 
@@ -137,11 +105,12 @@ module.exports = new Feature(
 				font-family: ${Setting.get([ns, 'custom-font']).value} !important;
 			}
 		`);
+		console.log(GM_getResourceURL(fontURLs.jetbrainsMono.regular));
 	},
 	[
 		new StringSetting(
 			'custom-font',
-			'"JetBrains Mono", "Fira Code", "Hack", "Menlo", "Monaco", "Source Code Pro", "Courier New", "Consolas", monospace',
+			'"JetBrains Mono", "Fira Code", "Source Code Pro", "Courier New", "Consolas", monospace',
 		),
 	],
 ).setDescription('Small tweaks for CodeMirror');

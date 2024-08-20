@@ -11,6 +11,23 @@
 		"https://md.fachschaften.org/*"
 	],
 	"run-at": "document-body",
-	"grant": ["GM_addStyle", "GM_getValue", "GM_setValue", "GM_xmlhttpRequest"],
-	"connect": ["www.fs-infmath.uni-kiel.de"]
+	"grant": [
+		"GM_addStyle",
+		"GM_getValue",
+		"GM_setValue",
+		"GM_xmlhttpRequest",
+		"GM_getResourceURL"
+	],
+	"connect": ["www.fs-infmath.uni-kiel.de", "protocoldroid.yorik.dev"],
+	"resource": {
+		"JetBrainsMonoRegular": "https://protocoldroid.yorik.dev/fonts/jetbrains-mono/JetBrainsMono-Regular.woff2",
+		"JetBrainsMonoBold": "https://protocoldroid.yorik.dev/fonts/jetbrains-mono/JetBrainsMono-Bold.woff2",
+		"JetBrainsMonoItalic": "https://protocoldroid.yorik.dev/fonts/jetbrains-mono/JetBrainsMono-Italic.woff2",
+		"JetBrainsMonoBoldItalic": "https://protocoldroid.yorik.dev/fonts/jetbrains-mono/JetBrainsMono-BoldItalic.woff2",
+		"FiraCodeLight": "https://protocoldroid.yorik.dev/fonts/fira-code/FiraCode-Light.woff2",
+		"FiraCodeRegular": "https://protocoldroid.yorik.dev/fonts/fira-code/FiraCode-Regular.woff2",
+		"FiraCodeMedium": "https://protocoldroid.yorik.dev/fonts/fira-code/FiraCode-Medium.woff2",
+		"FiraCodeSemiBold": "https://protocoldroid.yorik.dev/fonts/fira-code/FiraCode-SemiBold.woff2",
+		"FiraCodeBold": "https://protocoldroid.yorik.dev/fonts/fira-code/FiraCode-Bold.woff2"
+	}
 }

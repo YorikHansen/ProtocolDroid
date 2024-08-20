@@ -3,6 +3,10 @@ const { UserscriptPlugin } = require('webpack-userscript');
 const pkg = require('./package.json');
 const headers = require('./src/headers.json');
 
+headers.resource = Object.keys(headers.resource).map(
+	resource => `${resource} ${headers.resource[resource]}`,
+);
+
 module.exports = {
 	mode: 'production',
 	entry: path.resolve(__dirname, 'src', 'index.js'),
@@ -19,6 +23,7 @@ module.exports = {
 				homepage: pkg.homepage,
 			},
 			pretty: true,
+			// TODO: SSRI hash the resources
 		}),
 	],
 };
