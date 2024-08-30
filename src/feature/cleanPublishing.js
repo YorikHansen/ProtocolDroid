@@ -43,7 +43,7 @@ module.exports = new Feature(
 				},
 				text => {
 					// cleanupBlocks
-					return text.replace(/:::.*\n[\s\S]*?\n:::/gs, '');
+					return text.replace(/:::.*?\n[\s\S]*?\n:::/gs, '');
 				},
 				text => {
 					// cleanupEmojis
