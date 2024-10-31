@@ -45,16 +45,23 @@ module.exports = new Feature(
 					if (fsNames[username]) {
 						mention.classList.remove('deactivated');
 						mention.setAttribute('data-fsname', fsNames[username]);
-						mention.setAttribute('data-toggle', 'tooltip');
-						mention.setAttribute('data-placement', 'right');
-						mention.setAttribute('data-original-title', fsNames[username]);
+						if (Setting.get([ns, 'tooltip']).value) {
+							mention.setAttribute('data-toggle', 'tooltip');
+							mention.setAttribute(
+								'data-placement',
+								Setting.get([ns, 'tooltip-placement']).value,
+							);
+							mention.setAttribute('data-original-title', fsNames[username]);
+						}
 					} else {
 						mention.classList.add('deactivated');
 					}
 				}),
 			)
 			.then(() => {
-				$('[data-toggle="tooltip"]').tooltip();
+				if (Setting.get([ns, 'tooltip']).value) {
+					$('[data-toggle="tooltip"]').tooltip();
+				}
 			});
 
 		const mentionColor = ColorSetting.toRGB(
@@ -97,7 +104,7 @@ module.exports = new Feature(
 		const proxy = (tokens, idx, options, _env, self) =>
 			self.renderToken(tokens, idx, options);
 		const defaultTextRenderer = md.renderer.rules.text || proxy;
-		const isMention = /(?<=\s|^)(?:@([a-z]+)|([a-z]+)@)(?=\s|$)/gi;
+		const isMention = /(?<=\s|\b|^)(?:@([a-z]+)|([a-z]+)@)(?=\s|\b|$)/gi;
 
 		md.renderer.rules.text = (tokens, idx, options, env, self) => {
 			const content = tokens[idx].content;
@@ -136,19 +143,33 @@ module.exports = new Feature(
 							tag: 'span',
 							nesting: 1,
 							attrs: fsNames[username]
-								? [
-										['data-toggle', 'tooltip'],
-										['data-placement', 'right'],
-										['data-original-title', fsNames[username]],
-										['data-fsname', fsNames[username]],
-										['data-username', username],
-										[
-											'class',
-											`mention ${frontAt ? 'frontAt' : ''} ${
-												backAt ? 'backAt' : ''
-											} ${username === me ? 'me' : ''}`,
-										],
-									]
+								? Setting.get([ns, 'tooltip']).value
+									? [
+											['data-toggle', 'tooltip'],
+											[
+												'data-placement',
+												Setting.get([ns, 'tooltip-placement']).value,
+											],
+											['data-original-title', fsNames[username]],
+											['data-fsname', fsNames[username]],
+											['data-username', username],
+											[
+												'class',
+												`mention ${frontAt ? 'frontAt' : ''} ${
+													backAt ? 'backAt' : ''
+												} ${username === me ? 'me' : ''}`,
+											],
+										]
+									: [
+											['data-fsname', fsNames[username]],
+											['data-username', username],
+											[
+												'class',
+												`mention ${frontAt ? 'frontAt' : ''} ${
+													backAt ? 'backAt' : ''
+												} ${username === me ? 'me' : ''}`,
+											],
+										]
 								: [
 										[
 											'class',
@@ -189,7 +210,9 @@ module.exports = new Feature(
 
 		document.addEventListener('mouseover', e => {
 			if (e.target.classList.contains('mention')) {
-				$('[data-toggle="tooltip"]').tooltip();
+				if (Setting.get([ns, 'tooltip']).value) {
+					$('[data-toggle="tooltip"]').tooltip();
+				}
 			}
 		});
 
@@ -213,5 +236,7 @@ module.exports = new Feature(
 		new StringSetting('me', ''),
 		new ColorSetting('mention-color', '#0078d7'),
 		new ColorSetting('mention-highlight-color', '#ff1100'),
+		new BooleanSetting('tooltip', true),
+		new StringSetting('tooltip-placement', 'right'),
 	],
 ).setDescription('Replace FS usernames with clickable links.');
