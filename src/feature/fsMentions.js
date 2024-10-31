@@ -8,7 +8,7 @@ const StringSetting = require('../base/StringSetting.js');
 
 module.exports = new Feature(
 	'fs-mentions',
-	(_$, _cm, md, ns) => {
+	($, _cm, md, ns) => {
 		const me = Setting.get([ns, 'me']).value || '';
 
 		let fsNames = GM_getValue(`${ns}.fsNames`, {});
@@ -38,17 +38,22 @@ module.exports = new Feature(
 				}, fsNames);
 				GM_setValue(`${ns}.fsNames`, fsNames);
 			})
-			.then(() => {
+			.then(() =>
 				document.querySelectorAll('.mention').forEach(mention => {
 					const username = mention.getAttribute('data-username');
 					if (fsNames[username]) {
 						mention.classList.remove('deactivated');
 						mention.setAttribute('data-fsname', fsNames[username]);
-						mention.setAttribute('title', fsNames[username]);
+						mention.setAttribute('data-toggle', 'tooltip');
+						mention.setAttribute('data-placement', 'right');
+						mention.setAttribute('data-original-title', fsNames[username]);
 					} else {
 						mention.classList.add('deactivated');
 					}
-				});
+				}),
+			)
+			.then(() => {
+				$('[data-toggle="tooltip"]').tooltip();
 			});
 
 		GM_addStyle(`
@@ -124,7 +129,9 @@ module.exports = new Feature(
 							nesting: 1,
 							attrs: fsNames[username]
 								? [
-										['title', fsNames[username]],
+										['data-toggle', 'tooltip'],
+										['data-placement', 'right'],
+										['data-original-title', fsNames[username]],
 										['data-fsname', fsNames[username]],
 										['data-username', username],
 										[
@@ -171,6 +178,12 @@ module.exports = new Feature(
 
 			return md.renderer.render(newTokens, options, env);
 		};
+
+		document.addEventListener('mouseover', e => {
+			if (e.target.classList.contains('mention')) {
+				$('[data-toggle="tooltip"]').tooltip();
+			}
+		});
 
 		document.addEventListener('click', e => {
 			if (e.target.classList.contains('mention')) {
