@@ -2,14 +2,17 @@ const ProtocolDroid = require('../base/ProtocolDroid.js');
 const Feature = require('../base/Feature.js');
 const Setting = require('../base/Setting.js');
 const BooleanSetting = require('../base/BooleanSetting.js');
+const ColorSetting = require('../base/ColorSetting.js');
 const StringSetting = require('../base/StringSetting.js');
 
 module.exports = new Feature(
 	'todo-notes',
 	(_$, cm, md, ns) => {
+		const defaultColor = Setting.get([ns, 'default-color']).value;
+
 		GM_addStyle(`
 		.todo-note {
-			color: ${Setting.get([ns, 'default-color']).value};
+			color: ${defaultColor};
 		}
 
 		.todo-text::before {
@@ -102,8 +105,6 @@ module.exports = new Feature(
 		// TODO: What about <!-- TODO: somethin ~my-name -->? Is this a comment, a TODO or a TODO-comment?
 	},
 	[
-		new StringSetting('default-color', '#eda35e').setValidateFn(
-			v => v.match(/^\#[a-f\d]{3}(?:[a-f\d]{3})?$/gi) !== null,
-		),
+		new ColorSetting('default-color', '#eda35e'),
 	],
 ).setDescription('Highlight TODO notes in the editor');

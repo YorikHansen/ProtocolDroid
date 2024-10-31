@@ -105,7 +105,6 @@ module.exports = new Feature(
 				font-family: ${Setting.get([ns, 'custom-font']).value} !important;
 			}
 		`);
-		console.log(GM_getResourceURL(fontURLs.jetbrainsMono.regular));
 	},
 	[
 		new StringSetting(

@@ -4,6 +4,7 @@ const ProtocolDroid = require('../base/ProtocolDroid.js');
 const Feature = require('../base/Feature.js');
 const Setting = require('../base/Setting.js');
 const BooleanSetting = require('../base/BooleanSetting.js');
+const ColorSetting = require('../base/ColorSetting.js');
 const StringSetting = require('../base/StringSetting.js');
 
 module.exports = new Feature(
@@ -56,6 +57,13 @@ module.exports = new Feature(
 				$('[data-toggle="tooltip"]').tooltip();
 			});
 
+		const mentionColor = ColorSetting.toRGB(
+			Setting.get([ns, 'mention-color']).value,
+		).join(', ');
+		const mentionHighlightColor = ColorSetting.toRGB(
+			Setting.get([ns, 'mention-highlight-color']).value,
+		).join(', ');
+
 		GM_addStyle(`
 			@media not print {
 				.mention:not(.deactivated) {
@@ -66,7 +74,7 @@ module.exports = new Feature(
 
 					color: rgb(var(--mention-color)) !important;
 					background-color: rgba(var(--mention-color), 0.1) !important;
-					--mention-color: 0, 120, 215;
+					--mention-color: ${mentionColor};
 				}
 				.mention:not(.deactivated):hover {
 					text-decoration: underline;
@@ -74,7 +82,7 @@ module.exports = new Feature(
 				}
 				
 				.mention:not(.deactivated).me {
-					--mention-color: 290, 17, 0;
+					--mention-color: ${mentionHighlightColor};
 				}
 			}
 
@@ -201,5 +209,9 @@ module.exports = new Feature(
 			}
 		});
 	},
-	[new StringSetting('me', '')],
+	[
+		new StringSetting('me', ''),
+		new ColorSetting('mention-color', '#0078d7'),
+		new ColorSetting('mention-highlight-color', '#ff1100'),
+	],
 ).setDescription('Replace FS usernames with clickable links.');
