@@ -34,7 +34,7 @@ const codemirrorTweaks = require('./feature/codemirrorTweaks');
 		ProtocolDroid.getJQuery(),
 		ProtocolDroid.getCodeMirror(),
 		ProtocolDroid.getMardownIt(),
-	]).then(([ $, cm, md ]) => {
+	]).then(([$, cm, md]) => {
 		Feature.loadAll($, cm, md);
 		ProtocolDroid.ready();
 	});

@@ -245,17 +245,11 @@ class ProtocolDroid {
 			'.active input',
 			'#view-mode-toggle-view',
 			'#view-mode-toggle-both',
-		]).then(
-			([
-				currentViewMode,
-				viewModeToggleView,
-				viewModeToggleBoth,
-			]) => {
-				viewModeToggleView.click();
-				viewModeToggleBoth.click();
-				currentViewMode.click();
-			},
-		);
+		]).then(([currentViewMode, viewModeToggleView, viewModeToggleBoth]) => {
+			viewModeToggleView.click();
+			viewModeToggleBoth.click();
+			currentViewMode.click();
+		});
 	};
 }
 
