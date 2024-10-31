@@ -30,7 +30,7 @@ module.exports = new Feature(
 				}
 
 				.spoiler:hover, .spoiler[data-open] {
-					background-color: lightgray !important;
+					background-color: #eee !important;
 				}
 
 				.spoiler::marker {
@@ -57,9 +57,9 @@ module.exports = new Feature(
 				}
 
 				@media print {
-					.spoiler * {
+					.spoiler, .spoiler * {
 						color: black !important;
-						background-color: lightgray !important;
+						background-color: #eee !important;
 					}
 				}
 			`);
