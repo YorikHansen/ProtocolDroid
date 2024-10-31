@@ -101,5 +101,7 @@ module.exports = new Feature(
 			}
 		});
 	},
-	[new BooleanSetting('blur', 'Blur Spoilers', false)],
-).setDescription('Highlight TODO notes in the editor');
+	[new BooleanSetting('blur', false)],
+).setDescription(
+	'Blur or black out spoilers/internal notices in the generated HTML',
+);
