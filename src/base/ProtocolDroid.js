@@ -220,6 +220,18 @@ class ProtocolDroid {
 			}
 		}
 	};
+
+	static ready = () => {
+		// Get the current view mode
+		console.log('ProtocolDroid is ready');
+		ProtocolDroid.getByQuery('.active input').then(currentViewMode =>
+			ProtocolDroid.getByQuery('#view-mode-toggle-view') // Get the view mode toggle
+				.then(viewModeToggle => viewModeToggle.click())
+				.then(() => ProtocolDroid.getByQuery('#view-mode-toggle-both')) // Switch to both
+				.then(viewModeToggle => viewModeToggle.click())
+				.then(() => currentViewMode.click()),
+		); // Restore the view mode
+	};
 }
 
 module.exports = ProtocolDroid;

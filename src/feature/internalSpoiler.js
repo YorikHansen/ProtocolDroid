@@ -82,7 +82,6 @@ module.exports = new Feature(
 
 				let match = inline.content.match(isInternal);
 				if (match) {
-					console.log(tokens[idx - 1]);
 					inline.content = match[1];
 					list_item_open.attrPush(['class', 'spoiler']);
 				}
