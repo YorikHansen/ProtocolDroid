@@ -15,6 +15,9 @@ const Feature = require('./Feature.js');
 
 class ProtocolDroid {
 	static getByQuery = query => {
+		if (Object.prototype.toString.call(query) === '[object Array]') {
+			return Promise.all(query.map(q => ProtocolDroid.getByQuery(q)));
+		}
 		return new Promise((resolve, _reject) => {
 			const interval = setInterval(() => {
 				const el = document.querySelector(query);
@@ -235,17 +238,24 @@ class ProtocolDroid {
 	static ready = () => {
 		ProtocolDroid.redraw();
 		console.log('ProtocolDroid is ready');
-	}
+	};
 
 	static redraw = () => {
-		// Get the current view mode
-		ProtocolDroid.getByQuery('.active input').then(currentViewMode =>
-			ProtocolDroid.getByQuery('#view-mode-toggle-view') // Get the view mode toggle
-				.then(viewModeToggle => viewModeToggle.click())
-				.then(() => ProtocolDroid.getByQuery('#view-mode-toggle-both')) // Switch to both
-				.then(viewModeToggle => viewModeToggle.click())
-				.then(() => currentViewMode.click()),
-		); // Restore the view mode
+		ProtocolDroid.getByQuery([
+			'.active input',
+			'#view-mode-toggle-view',
+			'#view-mode-toggle-both',
+		]).then(
+			([
+				currentViewMode,
+				viewModeToggleView,
+				viewModeToggleBoth,
+			]) => {
+				viewModeToggleView.click();
+				viewModeToggleBoth.click();
+				currentViewMode.click();
+			},
+		);
 	};
 }
 
