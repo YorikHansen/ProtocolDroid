@@ -20,7 +20,7 @@ const codemirrorTweaks = require('./feature/codemirrorTweaks');
 		console.log('ProtocolDroid is ready');
 	});
 
-	document.addEventListener('protocolDroidFeatureLoaded', (e) => {
+	document.addEventListener('protocolDroidFeatureLoaded', e => {
 		console.log('ProtocolDroid loaded feature:', e.detail.name);
 	});
 
