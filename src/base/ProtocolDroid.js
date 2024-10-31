@@ -237,7 +237,7 @@ class ProtocolDroid {
 
 	static ready = () => {
 		ProtocolDroid.redraw();
-		console.log('ProtocolDroid is ready');
+		document.dispatchEvent(new CustomEvent('protocolDroidReady'));
 	};
 
 	static redraw = () => {

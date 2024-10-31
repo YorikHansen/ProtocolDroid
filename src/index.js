@@ -13,8 +13,16 @@ const todoNotesFeature = require('./feature/todoNotes');
 const visibleCommentsFeature = require('./feature/visibleComments');
 const codemirrorTweaks = require('./feature/codemirrorTweaks');
 
-(function () {
+(() => {
 	'use strict';
+
+	document.addEventListener('protocolDroidReady', () => {
+		console.log('ProtocolDroid is ready');
+	});
+
+	document.addEventListener('protocolDroidFeatureLoaded', (e) => {
+		console.log('ProtocolDroid loaded feature:', e.detail.name);
+	});
 
 	cleanPublishingFeature.register();
 	codemirrorTweaks.register();

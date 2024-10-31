@@ -38,7 +38,7 @@ class Feature {
 	load($, cm, md, _ns) {
 		if (Setting.get(['features', this.name]).value) {
 			this.code($, cm, md, [this.name]);
-			console.log(`Feature ${this.name} loaded`);
+			document.dispatchEvent(new CustomEvent('protocolDroidFeatureLoaded', { detail: this }));
 		}
 	}
 
