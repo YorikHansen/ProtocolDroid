@@ -1,6 +1,6 @@
 {
 	"name": "protocoldroid",
-	"version": "0.3.4",
+	"version": "0.3.5",
 	"description": "A client side HedgeDoc extension that helps with protocols.",
 	"author": {
 		"name": "Yorik Hansen",
