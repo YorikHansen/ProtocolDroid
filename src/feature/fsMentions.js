@@ -67,17 +67,17 @@ module.exports = new Feature(
 					text-decoration: underline;
 					background-color: rgba(var(--mention-color), 0.3) !important;
 				}
-
-				.mention.frontAt::before {
-					content: '@';
-				}
-				.mention.backAt::after {
-					content: '@';
-				}
 				
 				.mention:not(.deactivated).me {
 					--mention-color: 290, 17, 0;
 				}
+			}
+
+			.mention.frontAt::before {
+				content: '@';
+			}
+			.mention.backAt::after {
+				content: '@';
 			}
 		`);
 
