@@ -8,7 +8,7 @@ const StringSetting = require('../base/StringSetting.js');
 
 module.exports = new Feature(
 	'fs-mentions',
-	(_cm, md, ns) => {
+	(_$, _cm, md, ns) => {
 		const me = Setting.get([ns, 'me']).value || '';
 
 		let fsNames = GM_getValue(`${ns}.fsNames`, {});

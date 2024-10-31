@@ -6,7 +6,7 @@ const StringSetting = require('../base/StringSetting.js');
 
 module.exports = new Feature(
 	'clean-publishing',
-	(cm, _md, _ns) => {
+	(_$, cm, _md, _ns) => {
 		GM_addStyle(`
 		.ui-publish-link {
 			float: right;

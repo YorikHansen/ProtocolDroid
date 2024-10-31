@@ -6,7 +6,7 @@ const StringSetting = require('../base/StringSetting.js');
 
 module.exports = new Feature(
 	'print-style',
-	(_cm, _md, ns) => {
+	(_$, _cm, _md, ns) => {
 		GM_addStyle(`
 		@media print {
 			abbr[title] {

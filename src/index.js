@@ -30,9 +30,10 @@ const codemirrorTweaks = require('./feature/codemirrorTweaks');
 
 	ProtocolDroid.addSettingMenu();
 
-	ProtocolDroid.getCodeMirror().then(cm =>
-		ProtocolDroid.getMardownIt()
-			.then(md => Feature.loadAll(cm, md))
-			.then(() => ProtocolDroid.ready()),
-	);
+	ProtocolDroid.getJQuery().then($ => 
+		ProtocolDroid.getCodeMirror().then(cm =>
+			ProtocolDroid.getMardownIt()
+				.then(md => Feature.loadAll($, cm, md))
+				.then(() => ProtocolDroid.ready())
+	));
 })();

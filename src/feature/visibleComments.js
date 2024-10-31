@@ -6,7 +6,7 @@ const StringSetting = require('../base/StringSetting.js');
 
 module.exports = new Feature(
 	'visible-comments',
-	(cm, md, ns) => {
+	(_$, cm, md, ns) => {
 		GM_addStyle(`
 		.comment {
 			user-select: none;

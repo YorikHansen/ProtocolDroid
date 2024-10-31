@@ -6,7 +6,7 @@ const StringSetting = require('../base/StringSetting.js');
 
 module.exports = new Feature(
 	'todo-notes',
-	(cm, md, ns) => {
+	(_$, cm, md, ns) => {
 		GM_addStyle(`
 		.todo-note {
 			color: ${Setting.get([ns, 'default-color']).value};

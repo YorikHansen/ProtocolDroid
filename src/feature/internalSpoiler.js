@@ -6,7 +6,7 @@ const StringSetting = require('../base/StringSetting.js');
 
 module.exports = new Feature(
 	'internal-spoiler',
-	(_cm, md, ns) => {
+	(_$, _cm, md, ns) => {
 		if (Setting.get([ns, 'blur']).value) {
 			GM_addStyle(`
 				@media not print {

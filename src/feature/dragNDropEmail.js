@@ -6,7 +6,7 @@ const StringSetting = require('../base/StringSetting.js');
 
 module.exports = new Feature(
 	'drag-n-drop-email',
-	(cm, _md, _ns) => {
+	(_$, cm, _md, _ns) => {
 		const rfc2047Decode = encoded => {
 			let decoded = '';
 			for (let i = 0; i < encoded.length; i++) {

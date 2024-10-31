@@ -35,9 +35,9 @@ class Feature {
 		return Feature.add(this, precedence);
 	}
 
-	load(cm, md, _ns) {
+	load($, cm, md, _ns) {
 		if (Setting.get(['features', this.name]).value) {
-			this.code(cm, md, [this.name]);
+			this.code($, cm, md, [this.name]);
 			console.log(`Feature ${this.name} loaded`);
 		}
 	}
@@ -56,11 +56,11 @@ class Feature {
 		return true; // TODO: Return false if feature already exists
 	}
 
-	static loadAll(cm, md) {
+	static loadAll($, cm, md) {
 		Feature._precedences.sort();
 		for (let i = Feature._precedences.length - 1; i >= 0; i--) {
 			Feature._features[Feature._precedences[i]].forEach(feature =>
-				feature.load(cm, md, ''),
+				feature.load($, cm, md, ''),
 			);
 		}
 	}

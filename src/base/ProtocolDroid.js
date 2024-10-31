@@ -26,6 +26,17 @@ class ProtocolDroid {
 		});
 	};
 
+	static getJQuery = () => {
+		return new Promise((resolve, _reject) => {
+			const interval = setInterval(() => {
+				if (unsafeWindow.$) {
+					clearInterval(interval);
+					resolve(unsafeWindow.$);
+				}
+			}, 100);
+		});
+	};
+
 	static getCodeMirror = () => {
 		return new Promise((resolve, _reject) => {
 			const interval = setInterval(() => {

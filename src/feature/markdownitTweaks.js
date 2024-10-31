@@ -6,7 +6,7 @@ const StringSetting = require('../base/StringSetting.js');
 
 module.exports = new Feature(
 	'markdownit-tweaks',
-	(_cm, md, ns) => {
+	(_$, _cm, md, ns) => {
 		// Add custom markdown to the renderer
 		if (Setting.get([ns, 'german-quotes'])) {
 			md.options.quotes = '„“‚‘'; // German quotes

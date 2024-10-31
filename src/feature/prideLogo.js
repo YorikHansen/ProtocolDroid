@@ -6,7 +6,7 @@ const StringSetting = require('../base/StringSetting.js');
 
 module.exports = new Feature(
 	'pride-logo',
-	(_cm, _md, _ns) => {
+	(_$, _cm, _md, _ns) => {
 		const logoNoNightImgs = Array.from(
 			document.querySelectorAll('.navbar-brand img.no-night'),
 		);
