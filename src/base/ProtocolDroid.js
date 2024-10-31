@@ -222,8 +222,12 @@ class ProtocolDroid {
 	};
 
 	static ready = () => {
-		// Get the current view mode
+		ProtocolDroid.redraw();
 		console.log('ProtocolDroid is ready');
+	}
+
+	static redraw = () => {
+		// Get the current view mode
 		ProtocolDroid.getByQuery('.active input').then(currentViewMode =>
 			ProtocolDroid.getByQuery('#view-mode-toggle-view') // Get the view mode toggle
 				.then(viewModeToggle => viewModeToggle.click())
