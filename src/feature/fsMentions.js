@@ -14,6 +14,17 @@ module.exports = new Feature(
 
 		let fsNames = GM_getValue(`${ns}.fsNames`, {});
 
+		const getInText = (_mention, username, fsName) => {
+			return Setting.get([ns, 'full-names']).value
+				? fsName ?? username
+				: username;
+		};
+		const getInTooltip = (mention, username, fsName) => {
+			return Setting.get([ns, 'full-names']).value
+				? mention
+				: fsName ?? username;
+		};
+
 		const fsNameMention = /([\s\S]+)\s\(([\S]+)\)/;
 		new Promise((resolve, _reject) => {
 			GM_xmlhttpRequest({
@@ -40,8 +51,9 @@ module.exports = new Feature(
 				GM_setValue(`${ns}.fsNames`, fsNames);
 			})
 			.then(() =>
-				document.querySelectorAll('.mention').forEach(mention => {
-					const username = mention.getAttribute('data-username');
+				document.querySelectorAll('.mention.deactivated').forEach(mention => {
+					const dataMention = mention.getAttribute('data-mention');
+					const dataUsername = mention.getAttribute('data-username');
 					if (fsNames[username]) {
 						mention.classList.remove('deactivated');
 						mention.setAttribute('data-fsname', fsNames[username]);
@@ -51,7 +63,18 @@ module.exports = new Feature(
 								'data-placement',
 								Setting.get([ns, 'tooltip-placement']).value,
 							);
-							mention.setAttribute('data-original-title', fsNames[username]);
+							mention.setAttribute(
+								'data-original-title',
+								getInTooltip(dataMention, dataUsername, fsNames[username]),
+							);
+						}
+						if (Setting.get([ns, 'full-names']).value) {
+							mention.innerText = getInText(
+								dataMention,
+								dataUsername,
+								fsNames[username],
+							);
+							mention.classList.remove('frontAt', 'backAt');
 						}
 					} else {
 						mention.classList.add('deactivated');
@@ -104,7 +127,8 @@ module.exports = new Feature(
 		const proxy = (tokens, idx, options, _env, self) =>
 			self.renderToken(tokens, idx, options);
 		const defaultTextRenderer = md.renderer.rules.text || proxy;
-		const isMention = /(?<=[\s,;]|\b|^)(?:@([a-z]+)|([a-z]+)@)(?=[\s,;]|\b|$)/gi;
+		const isMention =
+			/(?<=[\s,;]|\b|^)(?:@([a-z]+)|([a-z]+)@)(?=[\s,;]|\b|$)/gi;
 
 		md.renderer.rules.text = (tokens, idx, options, env, self) => {
 			const content = tokens[idx].content;
@@ -137,51 +161,41 @@ module.exports = new Feature(
 						);
 					}
 
+					const inText = getInText(mention, username, fsNames[username]);
+					const inTooltip = getInTooltip(mention, username, fsNames[username]);
+					const hideAt =
+						Setting.get([ns, 'full-names']).value && fsNames[username];
+
+					const classes = ['mention'];
+					if (frontAt && !hideAt) classes.push('frontAt');
+					if (backAt && !hideAt) classes.push('backAt');
+					if (username === me) classes.push('me');
+					if (!fsNames[username]) classes.push('deactivated');
+
+					const attrs = [
+						['data-mention', mention],
+						['data-username', username],
+						['class', classes.join(' ')],
+					];
+					if (fsNames[username]) attrs.push(['data-fsname', fsNames[username]]);
+					if (fsNames[username] && Setting.get([ns, 'tooltip']).value) {
+						attrs.push(['data-toggle', 'tooltip']);
+						attrs.push([
+							'data-placement',
+							Setting.get([ns, 'tooltip-placement']).value,
+						]);
+						attrs.push(['data-original-title', inTooltip]);
+					}
+
 					accs[0].push(
 						Object.assign({}, tokenScaffold, {
 							type: 'link_open',
 							tag: 'span',
 							nesting: 1,
-							attrs: fsNames[username]
-								? Setting.get([ns, 'tooltip']).value
-									? [
-											['data-toggle', 'tooltip'],
-											[
-												'data-placement',
-												Setting.get([ns, 'tooltip-placement']).value,
-											],
-											['data-original-title', fsNames[username]],
-											['data-fsname', fsNames[username]],
-											['data-username', username],
-											[
-												'class',
-												`mention ${frontAt ? 'frontAt' : ''} ${
-													backAt ? 'backAt' : ''
-												} ${username === me ? 'me' : ''}`,
-											],
-										]
-									: [
-											['data-fsname', fsNames[username]],
-											['data-username', username],
-											[
-												'class',
-												`mention ${frontAt ? 'frontAt' : ''} ${
-													backAt ? 'backAt' : ''
-												} ${username === me ? 'me' : ''}`,
-											],
-										]
-								: [
-										[
-											'class',
-											`mention ${frontAt ? 'frontAt' : ''} ${
-												backAt ? 'backAt' : ''
-											} deactivated`,
-										],
-										['data-username', username],
-									],
+							attrs: attrs,
 						}),
 						Object.assign({}, tokenScaffold, {
-							content: username,
+							content: inText,
 							level: 1,
 						}),
 						Object.assign({}, tokenScaffold, {
@@ -233,6 +247,7 @@ module.exports = new Feature(
 		});
 	},
 	[
+		new BooleanSetting('full-names', false),
 		new StringSetting('me', ''),
 		new ColorSetting('mention-color', '#0078d7'),
 		new ColorSetting('mention-highlight-color', '#ff1100'),
