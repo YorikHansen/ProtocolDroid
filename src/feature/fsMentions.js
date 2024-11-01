@@ -104,7 +104,7 @@ module.exports = new Feature(
 		const proxy = (tokens, idx, options, _env, self) =>
 			self.renderToken(tokens, idx, options);
 		const defaultTextRenderer = md.renderer.rules.text || proxy;
-		const isMention = /(?<=\s|\b|^)(?:@([a-z]+)|([a-z]+)@)(?=\s|\b|$)/gi;
+		const isMention = /(?<=[\s,;]|\b|^)(?:@([a-z]+)|([a-z]+)@)(?=[\s,;]|\b|$)/gi;
 
 		md.renderer.rules.text = (tokens, idx, options, env, self) => {
 			const content = tokens[idx].content;

@@ -28,7 +28,7 @@ const codemirrorTweaks = require('./feature/codemirrorTweaks');
 	codemirrorTweaks.register();
 	customLogoOverlayFeature.register(1);
 	dragNDropEmailFeature.register();
-	fsMentionsFeature.register();
+	fsMentionsFeature.register(2);
 	internalSpoilerFeature.register();
 	markdownitTweaksFeature.register();
 	prideLogoFeature.register();

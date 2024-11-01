@@ -97,6 +97,7 @@ module.exports = new Feature(
 			self.renderToken(tokens, idx, options);
 		const defaultHTMLBlockRenderer = md.renderer.rules.html_block || proxy;
 		const defaultHTMLInlineRenderer = md.renderer.rules.html_inline || proxy;
+		const defaultTextRenderer = md.renderer.rules.text || proxy;
 
 		// Comments have the form `<!-- comment ~author -->`.
 		//  There MUST be at least one white space (`\s`) before the `~`.
@@ -108,6 +109,22 @@ module.exports = new Feature(
 			/<!--\s*((?:[^-\s]|-[^-]|--[^>])(?:[^-]|-[^-]|--[^>])*)\s+~\s*((?:[^~-\s\n]|-[^-\n]|--[^>\n])(?:[^-\n]|-[^-\n]|--[^>\n])*)\s*-->/;
 		const isComments =
 			/(?:(?:<!--\s*((?:[^-\s]|-[^-]|--[^>])(?:[^-]|-[^-]|--[^>])*)\s+~\s*((?:[^~-\s\n]|-[^-\n]|--[^>\n])(?:[^-\n]|-[^-\n]|--[^>\n])*)\s*-->)\s*)+/; // For bundling
+
+			const renderText = (text, options, env, self) => defaultTextRenderer([{
+				attrs: null,
+				block: false,
+				children: null,
+				content: text,
+				hidden: false,
+				info: '',
+				level: 0,
+				map: null,
+				markup: '',
+				meta: null,
+				nesting: 0,
+				tag: '',
+				type: 'text',
+			}], 0, options, env, self);
 
 		// TODO: Fix error with indented html_blocks
 		md.renderer.rules.html_block = (tokens, idx, options, env, self) => {
@@ -130,7 +147,7 @@ module.exports = new Feature(
 			while (i >= 0) {
 				let match = content.match(isComment);
 				transformed += content.slice(0, i);
-				transformed += `<span class="comment" data-opened="${Setting.get([ns, 'comment-opened-default']).value}"><span class="comment-icon fa fa-comment fa-fw"></span><span class="comment-content">${md.utils.escapeHtml(match[1].trim())}</span><span class="comment-author">${md.utils.escapeHtml(match[2].trim())}</span></span>`;
+				transformed += `<span class="comment" data-opened="${Setting.get([ns, 'comment-opened-default']).value}"><span class="comment-icon fa fa-comment fa-fw"></span><span class="comment-content">${renderText(match[1])}</span><span class="comment-author">${md.utils.escapeHtml(match[2].trim())}</span></span>`;
 				content = content.slice(i + match[0].length);
 				i = content.search(isComment);
 			}
@@ -144,7 +161,7 @@ module.exports = new Feature(
 		md.renderer.rules.html_inline = (tokens, idx, options, env, self) => {
 			const match = tokens[idx].content.match(isComment);
 			if (match) {
-				return `<span class="comment" data-opened="${Setting.get([ns, 'comment-opened-default']).value}"><span class="comment-icon fa fa-comment fa-fw"></span><span class="comment-content">${md.utils.escapeHtml(match[1].trim())}</span><span class="comment-author">${md.utils.escapeHtml(match[2].trim())}</span></span>`;
+				return `<span class="comment" data-opened="${Setting.get([ns, 'comment-opened-default']).value}"><span class="comment-icon fa fa-comment fa-fw"></span><span class="comment-content">${renderText(match[1])}</span><span class="comment-author">${md.utils.escapeHtml(match[2].trim())}</span></span>`;
 			}
 			return defaultHTMLInlineRenderer(tokens, idx, options, env, self);
 		};

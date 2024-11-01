@@ -35,9 +35,26 @@ module.exports = new Feature(
 			self.renderToken(tokens, idx, options);
 		const defaultHTMLBlockRenderer = md.renderer.rules.html_block || proxy;
 		const defaultHTMLInlineRenderer = md.renderer.rules.html_inline || proxy;
+		const defaultTextRenderer = md.renderer.rules.text || proxy;
 		// (?:[^-\n]|-[^-\n]|--[^>\n])*
 		const isTodo =
 			/<!--\s*(?:\[TODO\]|TODO):?\s*((?:[^-\s]|-[^-\n]|--[^>\n])(?:[^-\n]|-[^-\n]|--[^>\n])*(?:[^-\s]|-[^-\s]|--[^>\s]) | (?:[^-\s]|-[^-\n]|--[^>\n]))?\s*-->/i;
+
+		const renderText = (text, options, env, self) => defaultTextRenderer([{
+			attrs: null,
+			block: false,
+			children: null,
+			content: text,
+			hidden: false,
+			info: '',
+			level: 0,
+			map: null,
+			markup: '',
+			meta: null,
+			nesting: 0,
+			tag: '',
+			type: 'text',
+		}], 0, options, env, self);
 
 		md.renderer.rules.html_block = (tokens, idx, options, env, self) => {
 			let content = tokens[idx].content;
@@ -52,7 +69,7 @@ module.exports = new Feature(
 				let match = content.match(isTodo);
 				transformed += content.slice(0, i);
 				if (match[1]) {
-					transformed += `<span class="todo-note"><span class="todo-icon fa fa-sticky-note fa-fw"></span><span class="todo-text">${md.utils.escapeHtml(match[1].trim())}</span></span>`;
+					transformed += `<span class="todo-note"><span class="todo-icon fa fa-sticky-note fa-fw"></span><span class="todo-text">${renderText(match[1])}</span></span>`;
 				} else {
 					transformed += `<span class="todo-note"><span class="todo-icon fa fa-sticky-note fa-fw"></span><span class="todo-text empty"></span></span>`;
 				}
@@ -70,7 +87,7 @@ module.exports = new Feature(
 			const match = tokens[idx].content.match(isTodo);
 			if (match) {
 				if (match[1]) {
-					return `<span class="todo-note"><span class="todo-icon fa fa-sticky-note fa-fw"></span><span class="todo-text">${md.utils.escapeHtml(match[1].trim())}</span></span>`;
+					return `<span class="todo-note"><span class="todo-icon fa fa-sticky-note fa-fw"></span><span class="todo-text">${renderText(match[1])}</span></span>`;
 				}
 				return `<span class="todo-note"><span class="todo-icon fa fa-sticky-note fa-fw"></span><span class="todo-text empty"></span></span>`;
 			}
