@@ -9,7 +9,7 @@ const StringSetting = require('../base/StringSetting.js');
 
 module.exports = new Feature(
 	'fs-mentions',
-	($, _cm, md, ns) => {
+	($, cm, md, ns) => {
 		const mes = [];
 		if (Setting.get([ns, 'me']).value.length)
 			mes.push(Setting.get([ns, 'me']).value);
@@ -62,7 +62,7 @@ module.exports = new Feature(
 				document.querySelectorAll('.mention.deactivated').forEach(mention => {
 					const dataMention = mention.getAttribute('data-mention');
 					const dataUsername = mention.getAttribute('data-username');
-					if (fsNames[username]) {
+					if (fsNames[dataUsername]) {
 						mention.classList.remove('deactivated');
 						mention.setAttribute('data-fsname', fsNames[username]);
 						if (Setting.get([ns, 'tooltip']).value) {
@@ -258,8 +258,49 @@ module.exports = new Feature(
 				a.remove();
 			}
 		});
+
+		if (Setting.get([ns, 'autocomplete']).value) {
+			$(cm.getInputField()).textcomplete([
+				{
+					id: ns,
+					match: /@([\S]*)/,
+					search: (_term, callback, match) => {
+						const names = Object.keys(fsNames).filter(
+							username => 
+								username.startsWith(match[1].toLowerCase()) || 
+								fsNames[username].toLowerCase().includes(match[1].toLowerCase()),
+								match[1] === '',
+						).sort((a, b) => {
+							// First show matching "at"s, then show alphabetically
+							const aMatch = a.startsWith(match[1]) ? 0 : 1;
+							const bMatch = b.startsWith(match[1]) ? 0 : 1;
+							if (aMatch === bMatch) {
+								return a.localeCompare(b);
+							}
+							return aMatch - bMatch;
+						}).map(username => ({
+							username: username.toLowerCase(),
+							fsName: fsNames[username],
+							usernameMatched: `<b>${username.slice(0, match[1].length)}</b>${username.slice(match[1].length)}`,
+							fsNameMatched: fsNames[username].replace(
+								new RegExp(`(${match[1]})`, 'i'),
+								'<b>$1</b>',
+							),
+						}));
+						callback(names);
+						return;
+					}, //my method
+					template: elem => `<i class="fa fa-at fa-fw"></i>&nbsp;${elem.usernameMatched} (${elem.fsNameMatched})`,
+					replace: elem => `@${elem.username}`,
+					context: text => {
+						return true;
+					},
+				},
+			]);
+		}
 	},
 	[
+		new BooleanSetting('autocomplete', true),
 		new BooleanSetting('full-names', false),
 		new StringSetting('me', ''),
 		new StringSetting('my-aliases', ''),
