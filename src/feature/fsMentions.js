@@ -10,7 +10,15 @@ const StringSetting = require('../base/StringSetting.js');
 module.exports = new Feature(
 	'fs-mentions',
 	($, _cm, md, ns) => {
-		const me = Setting.get([ns, 'me']).value || '';
+		const mes = [];
+		if (Setting.get([ns, 'me']).value.length)
+			mes.push(Setting.get([ns, 'me']).value);
+		if (Setting.get([ns, 'my-aliases']).value.length)
+			mes.push(
+				...Setting.get([ns, 'my-aliases'])
+					.value.split(',')
+					.map(a => a.trim()),
+			);
 
 		let fsNames = GM_getValue(`${ns}.fsNames`, {});
 
@@ -96,6 +104,7 @@ module.exports = new Feature(
 
 		GM_addStyle(`
 			@media not print {
+				.mention.me,
 				.mention:not(.deactivated) {
 					border-radius: 3px;
 					padding: 0 2px;
@@ -111,8 +120,12 @@ module.exports = new Feature(
 					background-color: rgba(var(--mention-color), 0.3) !important;
 				}
 				
-				.mention:not(.deactivated).me {
+				.mention.me {
 					--mention-color: ${mentionHighlightColor};
+				}
+
+				.mention.me.deactivated {
+					cursor: default;
 				}
 			}
 
@@ -169,7 +182,7 @@ module.exports = new Feature(
 					const classes = ['mention'];
 					if (frontAt && !hideAt) classes.push('frontAt');
 					if (backAt && !hideAt) classes.push('backAt');
-					if (username === me) classes.push('me');
+					if (mes.includes(username)) classes.push('me');
 					if (!fsNames[username]) classes.push('deactivated');
 
 					const attrs = [
@@ -249,6 +262,7 @@ module.exports = new Feature(
 	[
 		new BooleanSetting('full-names', false),
 		new StringSetting('me', ''),
+		new StringSetting('my-aliases', ''),
 		new ColorSetting('mention-color', '#0078d7'),
 		new ColorSetting('mention-highlight-color', '#ff1100'),
 		new BooleanSetting('tooltip', true),
