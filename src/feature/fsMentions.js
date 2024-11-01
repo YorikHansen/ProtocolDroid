@@ -263,7 +263,7 @@ module.exports = new Feature(
 			$(cm.getInputField()).textcomplete([
 				{
 					id: ns,
-					match: /@([\S]*)/,
+					match: /@((?:\S+\s\S)*[\S]*)/,
 					search: (_term, callback, match) => {
 						const names = Object.keys(fsNames).filter(
 							username => 
