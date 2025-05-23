@@ -66,6 +66,58 @@ module.exports = new Feature(
 					// removeMultipleNewlines
 					return text.replace(/\n\n+/g, '\n\n');
 				},
+				text => {
+					// changeListSymbolsOnNewList
+					const LIST_SYMBOLS = ['-', '+', '*'];
+					const GET_MAIN_LIST_ITEM = RegExp(
+						`^ ?(${LIST_SYMBOLS.map(RegExp.escape).join('|')}) (?=\\S)`,
+					);
+					const ALL_LIST_ITEMS = RegExp(
+						`^(?: ?((?:  |\\t)*))?${LIST_SYMBOLS.map(RegExp.escape).join('|')} (?=\\S)`,
+						'gm',
+					);
+
+					const newBlock = (listSymbol = null) => ({
+						content: '',
+						listSymbol,
+					});
+					const blocks = [];
+					let newList = false;
+					let currentBlock = newBlock();
+					text.split('\n').forEach(line => {
+						const listSymbol = line.match(GET_MAIN_LIST_ITEM)?.[1] ?? null;
+						if (listSymbol === null) {
+							newList ||= line === '';
+						} else if (newList || currentBlock.listSymbol !== listSymbol) {
+							blocks.push(currentBlock);
+							currentBlock = newBlock(listSymbol);
+							newList = false;
+						}
+						currentBlock.content += `${line}\n`;
+					});
+					blocks.push(currentBlock);
+
+					for (let i = 0; i < blocks.length; i++) {
+						const blockedSymbols = [
+							blocks[i - 1]?.listSymbol,
+							blocks[i + 1]?.listSymbol,
+						].filter(Boolean);
+						if (blocks[i].listSymbol) {
+							blocks[i].listSymbol = LIST_SYMBOLS.filter(
+								symbol => !blockedSymbols.includes(symbol),
+							)[0];
+						}
+					}
+
+					blocks.forEach(block => {
+						block.content = block.content.replaceAll(
+							ALL_LIST_ITEMS,
+							`$1${block.listSymbol}`,
+						);
+					});
+
+					return blocks.map(block => block.content).join('');
+				},
 			].forEach(cleanupFn => {
 				text = cleanupFn(text);
 			});
