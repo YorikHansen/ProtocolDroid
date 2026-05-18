@@ -33,38 +33,99 @@ module.exports = new Feature(
 				// TODO: Move this to options
 				text => {
 					// cleanupComments
-					return text.replace(/<!--.*?-->/gs, '');
+					return text.replaceAll(/<!--.*?-->/gs, '');
 				},
 				text => {
 					// cleanupAbbreveations
 					return text
-						.replace(/\*\[[^\n]+?\]: .+?\n/gs, '')
-						.replace(/\*\[[^\n]+?\]: [^\n]+$/gs, '');
+						.replaceAll(/\*\[[^\n]+?\]: .+?\n/gs, '')
+						.replaceAll(/\*\[[^\n]+?\]: [^\n]+$/gs, '');
 				},
 				text => {
 					// cleanupBlocks
-					return text.replace(/:::.*?\n[\s\S]*?\n:::/gs, '');
+					return text.replaceAll(/:::.*?\n[\s\S]*?\n:::/gs, '');
 				},
 				text => {
 					// cleanupEmojis
-					return text.replace(/:\S+:/g, '');
+					return text.replaceAll(/:\S+:/g, '');
 				},
 				text => {
 					// cleanupYAML
-					return text.replace(/^---\n[\s\S]*?\n---/gs, '');
+					return text.replaceAll(/^---\n[\s\S]*?\n---/gs, '');
 				},
 				text => {
 					// cleanupHTML
 					// TODO: Should this also remove the content?
-					return text.replace(/(?:<(?:[^>]+)>)/gi, '');
+					return text.replaceAll(/(?:<(?:[^>]+)>)/gi, '');
 				},
 				text => {
 					// cleanupWhitespaceBeginningAndEnd
-					return text.replace(/^\s+|\s+$/g, '');
+					return text.replaceAll(/^\s+|\s+$/g, '');
 				},
 				text => {
 					// removeMultipleNewlines
-					return text.replace(/\n\n+/g, '\n\n');
+					return text.replaceAll(/\n\n+/g, '\n\n');
+				},
+				text => {
+					// subTopsToSubList
+					let inSubTop = false;
+					let directAfter = false;
+					return text.split('\n').map(line => {
+						if (line.startsWith('### ')) {
+							inSubTop = true;
+							directAfter = true;
+							let title = line.slice(4);
+							if (title.match(/\[intern\]\s/)) {
+								return `- [intern] **${title.replace('[intern] ', '')}**\n`
+							}
+							return `- **${title}**\n`
+						}
+						if (directAfter && !line.trim()) {
+							return '';
+						}
+						directAfter = false;
+
+						if (line.startsWith('#')) {
+							inSubTop = false;
+							return `${line}\n`;
+						}
+						if (inSubTop && line.trim()) {
+							return `    ${line}\n`;
+						}
+						return `${line}\n`;
+					}).join('');
+				},
+				text => {
+					// internalTopsToTopLevelList
+					let isInternal = false;
+					let directAfter = false;
+
+					return text.split('\n').map(line => {
+						if (
+							line.match(/^##\s+\[intern\]\s/) || 
+							line.match(/^##\s+TOP\s+\d+[A-Za-z]+\:\s*\[intern\]\s/)
+						) {
+							isInternal = true;
+							directAfter = true;
+
+							return line
+								.replace('[intern] ', '')
+								+ '\n- [intern] Es folgt eine interne Diskussion:\n';
+						}
+						if (directAfter && !line.trim()) {
+							return '';
+						}
+						directAfter = false;
+
+						if (line.startsWith('## ')) {
+							isInternal = false;
+							return `${line}\n`;
+						}
+						if (isInternal && line.trim()) {
+							return `    ${line}\n`;
+						}
+						return `${line}\n`;
+					}).join('');
 				},
 				text => {
 					// changeListSymbolsOnNewList
@@ -118,6 +179,20 @@ module.exports = new Feature(
 
 					return blocks.map(block => block.content).join('');
 				},
+				text => text.split('\n').map(line => {
+					// fixAttendees
+					if (line.trim() === '## Anwesende') {
+						return '## Anwesende:';
+					}
+					return line;
+				}).join('\n'),
+				text => text.split('\n').map(line => {
+					// removeAdditionalHeadingInformation
+					if (line.startsWith('# Protokoll ')) {
+						return line.replaceAll(/\(.*\)/g, '').trim();
+					}
+					return line;
+				}).join('\n'),
 			].forEach(cleanupFn => {
 				text = cleanupFn(text);
 			});
@@ -220,6 +295,7 @@ module.exports = new Feature(
 		});
 	},
 	[
+		// new BooleanSetting('to-xml', true),
 		// new BooleanSetting('auto-lint', true), // TODO: Add linting
 	],
 ).setDescription(
