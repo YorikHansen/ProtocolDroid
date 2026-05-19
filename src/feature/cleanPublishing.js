@@ -70,62 +70,69 @@ module.exports = new Feature(
 					// subTopsToSubList
 					let inSubTop = false;
 					let directAfter = false;
-					return text.split('\n').map(line => {
-						if (line.startsWith('### ')) {
-							inSubTop = true;
-							directAfter = true;
-							let title = line.slice(4);
-							if (title.match(/\[intern\]\s/)) {
-								return `- [intern] **${title.replace('[intern] ', '')}**\n`
+					return text
+						.split('\n')
+						.map(line => {
+							if (line.startsWith('### ')) {
+								inSubTop = true;
+								directAfter = true;
+								let title = line.slice(4);
+								if (title.match(/\[intern\]\s/)) {
+									return `- [intern] **${title.replace('[intern] ', '')}**\n`;
+								}
+								return `- **${title}**\n`;
 							}
-							return `- **${title}**\n`
-						}
-						if (directAfter && !line.trim()) {
-							return '';
-						}
-						directAfter = false;
+							if (directAfter && !line.trim()) {
+								return '';
+							}
+							directAfter = false;
 
-						if (line.startsWith('#')) {
-							inSubTop = false;
+							if (line.startsWith('#')) {
+								inSubTop = false;
+								return `${line}\n`;
+							}
+							if (inSubTop && line.trim()) {
+								return `    ${line}\n`;
+							}
 							return `${line}\n`;
-						}
-						if (inSubTop && line.trim()) {
-							return `    ${line}\n`;
-						}
-						return `${line}\n`;
-					}).join('');
+						})
+						.join('');
 				},
 				text => {
 					// internalTopsToTopLevelList
 					let isInternal = false;
 					let directAfter = false;
 
-					return text.split('\n').map(line => {
-						if (
-							line.match(/^##\s+\[intern\]\s/) || 
-							line.match(/^##\s+TOP\s+\d+[a-z]*\:\s*\[intern\]\s/)
-						) {
-							isInternal = true;
-							directAfter = true;
+					return text
+						.split('\n')
+						.map(line => {
+							if (
+								line.match(/^##\s+\[intern\]\s/) ||
+								line.match(/^##\s+TOP\s+\d+[a-z]*\:\s*\[intern\]\s/)
+							) {
+								isInternal = true;
+								directAfter = true;
 
-							return line
-								.replace('[intern] ', '')
-								+ '\n- [intern] Es folgt eine interne Diskussion:\n';
-						}
-						if (directAfter && !line.trim()) {
-							return '';
-						}
-						directAfter = false;
+								return (
+									line.replace('[intern] ', '') +
+									'\n- [intern] Es folgt eine interne Diskussion:\n'
+								);
+							}
+							if (directAfter && !line.trim()) {
+								return '';
+							}
+							directAfter = false;
 
-						if (line.startsWith('## ')) {
-							isInternal = false;
+							if (line.startsWith('## ')) {
+								isInternal = false;
+								return `${line}\n`;
+							}
+							if (isInternal && line.trim()) {
+								return `    ${line}\n`;
+							}
 							return `${line}\n`;
-						}
-						if (isInternal && line.trim()) {
-							return `    ${line}\n`;
-						}
-						return `${line}\n`;
-					}).join('');
+						})
+						.join('');
 				},
 				text => {
 					// changeListSymbolsOnNewList
@@ -134,7 +141,7 @@ module.exports = new Feature(
 						`^ ?(${LIST_SYMBOLS.map(RegExp.escape).join('|')}) (?=\\S)`,
 					);
 					const ALL_LIST_ITEMS = RegExp(
-						`^(?: ?((?:  |\\t)*))?${LIST_SYMBOLS.map(RegExp.escape).join('|')} (?=\\S)`,
+						`^(?: ?((?:  |\\t)*))?(?:${LIST_SYMBOLS.map(RegExp.escape).join('|')}) (?=\\S)`,
 						'gm',
 					);
 
@@ -173,26 +180,34 @@ module.exports = new Feature(
 					blocks.forEach(block => {
 						block.content = block.content.replaceAll(
 							ALL_LIST_ITEMS,
-							`$1${block.listSymbol}`,
+							`$1${block.listSymbol} `,
 						);
 					});
 
 					return blocks.map(block => block.content).join('');
 				},
-				text => text.split('\n').map(line => {
-					// fixAttendees
-					if (line.trim() === '## Anwesende') {
-						return '## Anwesende:';
-					}
-					return line;
-				}).join('\n'),
-				text => text.split('\n').map(line => {
-					// removeAdditionalHeadingInformation
-					if (line.startsWith('# Protokoll ')) {
-						return line.replaceAll(/\(.*\)/g, '').trim();
-					}
-					return line;
-				}).join('\n'),
+				text =>
+					text
+						.split('\n')
+						.map(line => {
+							// fixAttendees
+							if (line.trim() === '## Anwesende') {
+								return '## Anwesende:';
+							}
+							return line;
+						})
+						.join('\n'),
+				text =>
+					text
+						.split('\n')
+						.map(line => {
+							// removeAdditionalHeadingInformation
+							if (line.startsWith('# Protokoll ')) {
+								return line.replaceAll(/\(.*\)/g, '').trim();
+							}
+							return line;
+						})
+						.join('\n'),
 			].forEach(cleanupFn => {
 				text = cleanupFn(text);
 			});
@@ -246,9 +261,10 @@ module.exports = new Feature(
 			downloadButton.innerHTML = '<i class="fa fa-download"></i> Download';
 			downloadButton.download = 'protocol.md';
 
-			// TODO: Add copy to clipboard in top right corner
 			let modalContent = document.createElement('div');
 			let preElement = document.createElement('pre');
+
+			let currentText;
 
 			let timeout;
 			let copyElement = document.createElement('i');
@@ -258,7 +274,7 @@ module.exports = new Feature(
 				if (timeout) {
 					clearTimeout(timeout);
 				}
-				navigator.clipboard.writeText(cleanup(cm.getValue()));
+				navigator.clipboard.writeText(currentText);
 				copyElement.classList.remove('fa-file-o');
 				copyElement.classList.add('fa-check');
 				timeout = setTimeout(() => {
@@ -272,14 +288,108 @@ module.exports = new Feature(
 			// codeElement.classList.add('md', 'hljs');  // TODO: highlight markdown
 
 			const updateCode = () => {
-				let text = cleanup(cm.getValue());
-				codeElement.innerText = text;
+				if (!currentText) {
+					currentText = cleanup(cm.getValue());
+				}
+				codeElement.innerText = currentText;
 				downloadButton.href =
-					'data:text/plain;charset=utf-8,' + encodeURIComponent(text);
+					'data:text/plain;charset=utf-8,' + encodeURIComponent(currentText);
 			};
 
 			cm.on('change', updateCode);
 			preElement.appendChild(codeElement);
+
+			let xmlifyElement = document.createElement('div');
+			xmlifyElement.style.display = 'flex';
+			xmlifyElement.style.justifyContent = 'space-between';
+			xmlifyElement.style.alignItems = 'center';
+			xmlifyElement.style.marginLeft = '1em';
+			xmlifyElement.style.marginRight = '1em';
+			let xmlifyText = document.createElement('span');
+			xmlifyText.innerText =
+				'Konvertiere das Protokoll zu XML (nur aus dem CAU-Netz verfügbar)';
+			xmlifyElement.appendChild(xmlifyText);
+
+			let xmlifyButton = document.createElement('button');
+			xmlifyButton.innerText = 'XML anzeigen';
+			xmlifyButton.classList.add('btn', 'btn-secondary');
+
+			let isXML = false;
+			xmlifyButton.addEventListener('click', () => {
+				if (isXML) {
+					currentText = cleanup(cm.getValue());
+					updateCode();
+					xmlifyButton.innerText = 'XML anzeigen';
+					isXML = false;
+					return;
+				}
+				const converterURL =
+					'https://www.fs-informatik.uni-kiel.de/00intern/protokollkonverter/';
+				try {
+					GM_xmlhttpRequest({
+						method: 'POST',
+						url: converterURL,
+						headers: {
+							'Content-Type': 'application/x-www-form-urlencoded',
+						},
+						data: 'protocol=' + encodeURIComponent(currentText),
+						onload: postResp => {
+							if (postResp.status < 200 || postResp.status >= 300) {
+								throw new Error(`Converter returned status ${postResp.status}`);
+							}
+							const responseText = postResp.responseText;
+							const parser = new DOMParser();
+							const doc = parser.parseFromString(responseText, 'text/html');
+							const preElements = doc.querySelectorAll('pre');
+							if (preElements.length < 2) {
+								throw new Error('Unexpected converter response: ' + responseText);
+							}
+							const warnings = preElements[0].innerText.trim();
+							const xml = preElements[1].innerText.trim();
+							if (warnings) {
+								const detailsElement = document.createElement('details');
+								detailsElement.style.marginBottom = '1em';
+								detailsElement.open = true;
+								const summaryElement = document.createElement('summary');
+								summaryElement.innerText = 'Ausgabe des Konverters';
+								summaryElement.style.cursor = 'pointer';
+								summaryElement.style.fontWeight = 'bold';
+								detailsElement.appendChild(summaryElement);
+								const warningsPre = document.createElement('pre');
+								warningsPre.innerText = warnings;
+								detailsElement.appendChild(warningsPre);
+								modalContent.insertBefore(detailsElement, preElement);
+							}
+							currentText = xml;
+							updateCode();
+							xmlifyButton.innerText = 'Markdown anzeigen';
+							isXML = true;
+						},
+						onerror: err => {
+							throw new Error('Converter POST error' + err);
+						},
+					});
+				} catch (error) {
+					alert('Error: ' + error.message);
+					console.error(error);
+				}
+			});
+			GM_xmlhttpRequest({
+				method: 'GET',
+				url: 'https://www.fs-informatik.uni-kiel.de/00intern/protokollkonverter/',
+				onload: resp => {
+					if (resp.status < 200 || resp.status >= 300) {
+						xmlifyButton.disabled = true;
+						xmlifyText.innerText += ' (Konverter nicht erreichbar)';
+						console.error('Converter GET error: ' + resp.status);
+						return;
+					}
+				},
+			});
+			xmlifyElement.appendChild(xmlifyButton);
+
+			modalContent.appendChild(xmlifyElement);
+			modalContent.appendChild(document.createElement('hr'));
 			modalContent.appendChild(preElement);
 
 			// Append modal to body
@@ -295,7 +405,6 @@ module.exports = new Feature(
 		});
 	},
 	[
-		// new BooleanSetting('to-xml', true),
 		// new BooleanSetting('auto-lint', true), // TODO: Add linting
 	],
 ).setDescription(

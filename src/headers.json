@@ -18,7 +18,11 @@
 		"GM_xmlhttpRequest",
 		"GM_getResourceURL"
 	],
-	"connect": ["www.fs-infmath.uni-kiel.de", "protocoldroid.yorik.dev"],
+	"connect": [
+		"www.fs-infmath.uni-kiel.de",
+		"www.fs-informatik.uni-kiel.de",
+		"protocoldroid.yorik.dev"
+	],
 	"resource": {
 		"JetBrainsMonoRegular": "https://protocoldroid.yorik.dev/fonts/jetbrains-mono/JetBrainsMono-Regular.woff2",
 		"JetBrainsMonoBold": "https://protocoldroid.yorik.dev/fonts/jetbrains-mono/JetBrainsMono-Bold.woff2",
