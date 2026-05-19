@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        ProtocolDroid
 // @description A client side HedgeDoc extension that helps with protocols.
-// @version     0.4.9
+// @version     0.4.10
 // @author      Yorik Hansen
 // @homepage    https://protocoldroid.yorik.dev/
 // @match       https://www.fs-infmath.uni-kiel.de/codimd/*
@@ -9,6 +9,7 @@
 // @match       https://md.kif.rocks/*
 // @match       https://md.fachschaften.org/*
 // @connect     www.fs-infmath.uni-kiel.de
+// @connect     www.fs-informatik.uni-kiel.de
 // @connect     protocoldroid.yorik.dev
 // @downloadURL https://github.com/YorikHansen/ProtocolDroid/raw/main/dist/protocoldroid.user.js
 // @grant       GM_addStyle
