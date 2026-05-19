@@ -287,8 +287,8 @@ module.exports = new Feature(
 			let codeElement = document.createElement('code');
 			// codeElement.classList.add('md', 'hljs');  // TODO: highlight markdown
 
-			const updateCode = () => {
-				if (!currentText) {
+			const updateCode = (reloadText = true) => {
+				if (reloadText) {
 					currentText = cleanup(cm.getValue());
 				}
 				codeElement.innerText = currentText;
@@ -361,7 +361,7 @@ module.exports = new Feature(
 								modalContent.insertBefore(detailsElement, preElement);
 							}
 							currentText = xml;
-							updateCode();
+							updateCode(false);
 							xmlifyButton.innerText = 'Markdown anzeigen';
 							isXML = true;
 						},
