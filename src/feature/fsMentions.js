@@ -265,32 +265,38 @@ module.exports = new Feature(
 					id: ns,
 					match: /@((?:\S+\s\S)*[\S]*)/,
 					search: (_term, callback, match) => {
-						const names = Object.keys(fsNames).filter(
-							username => 
-								username.startsWith(match[1].toLowerCase()) || 
-								fsNames[username].toLowerCase().includes(match[1].toLowerCase()),
+						const names = Object.keys(fsNames)
+							.filter(
+								username =>
+									username.startsWith(match[1].toLowerCase()) ||
+									fsNames[username]
+										.toLowerCase()
+										.includes(match[1].toLowerCase()),
 								match[1] === '',
-						).sort((a, b) => {
-							// First show matching "at"s, then show alphabetically
-							const aMatch = a.startsWith(match[1]) ? 0 : 1;
-							const bMatch = b.startsWith(match[1]) ? 0 : 1;
-							if (aMatch === bMatch) {
-								return a.localeCompare(b);
-							}
-							return aMatch - bMatch;
-						}).map(username => ({
-							username: username.toLowerCase(),
-							fsName: fsNames[username],
-							usernameMatched: `<b>${username.slice(0, match[1].length)}</b>${username.slice(match[1].length)}`,
-							fsNameMatched: fsNames[username].replace(
-								new RegExp(`(${match[1]})`, 'i'),
-								'<b>$1</b>',
-							),
-						}));
+							)
+							.sort((a, b) => {
+								// First show matching "at"s, then show alphabetically
+								const aMatch = a.startsWith(match[1]) ? 0 : 1;
+								const bMatch = b.startsWith(match[1]) ? 0 : 1;
+								if (aMatch === bMatch) {
+									return a.localeCompare(b);
+								}
+								return aMatch - bMatch;
+							})
+							.map(username => ({
+								username: username.toLowerCase(),
+								fsName: fsNames[username],
+								usernameMatched: `<b>${username.slice(0, match[1].length)}</b>${username.slice(match[1].length)}`,
+								fsNameMatched: fsNames[username].replace(
+									new RegExp(`(${match[1]})`, 'i'),
+									'<b>$1</b>',
+								),
+							}));
 						callback(names);
 						return;
 					}, //my method
-					template: elem => `<i class="fa fa-at fa-fw"></i>&nbsp;${elem.usernameMatched} (${elem.fsNameMatched})`,
+					template: elem =>
+						`<i class="fa fa-at fa-fw"></i>&nbsp;${elem.usernameMatched} (${elem.fsNameMatched})`,
 					replace: elem => `@${elem.username}`,
 					context: text => {
 						return true;

@@ -40,21 +40,30 @@ module.exports = new Feature(
 		const isTodo =
 			/<!--\s*(?:\[TODO\]|TODO):?\s*((?:[^-\s]|-[^-\n]|--[^>\n])(?:[^-\n]|-[^-\n]|--[^>\n])*(?:[^-\s]|-[^-\s]|--[^>\s]) | (?:[^-\s]|-[^-\n]|--[^>\n]))?\s*-->/i;
 
-		const renderText = (text, options, env, self) => defaultTextRenderer([{
-			attrs: null,
-			block: false,
-			children: null,
-			content: text,
-			hidden: false,
-			info: '',
-			level: 0,
-			map: null,
-			markup: '',
-			meta: null,
-			nesting: 0,
-			tag: '',
-			type: 'text',
-		}], 0, options, env, self);
+		const renderText = (text, options, env, self) =>
+			defaultTextRenderer(
+				[
+					{
+						attrs: null,
+						block: false,
+						children: null,
+						content: text,
+						hidden: false,
+						info: '',
+						level: 0,
+						map: null,
+						markup: '',
+						meta: null,
+						nesting: 0,
+						tag: '',
+						type: 'text',
+					},
+				],
+				0,
+				options,
+				env,
+				self,
+			);
 
 		md.renderer.rules.html_block = (tokens, idx, options, env, self) => {
 			let content = tokens[idx].content;
