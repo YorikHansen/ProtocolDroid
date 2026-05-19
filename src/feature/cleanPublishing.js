@@ -103,7 +103,7 @@ module.exports = new Feature(
 					return text.split('\n').map(line => {
 						if (
 							line.match(/^##\s+\[intern\]\s/) || 
-							line.match(/^##\s+TOP\s+\d+[A-Za-z]+\:\s*\[intern\]\s/)
+							line.match(/^##\s+TOP\s+\d+[a-z]*\:\s*\[intern\]\s/)
 						) {
 							isInternal = true;
 							directAfter = true;
