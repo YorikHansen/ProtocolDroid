@@ -56,7 +56,8 @@ module.exports = new Feature(
 				text => {
 					// cleanupHTML
 					// TODO: Should this also remove the content?
-					return text.replaceAll(/(?:<(?:[^>]+)>)/gi, '');
+					// But don't remove links
+					return text.replaceAll(/(?:<(?!https?:)(?:[^>]+)>)/gi, '');
 				},
 				text => {
 					// cleanupWhitespaceBeginningAndEnd
